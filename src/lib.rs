@@ -1,10 +1,11 @@
 use gdnative::prelude::*;
+use ggrs::*;
 use std::option::*;
 
 #[derive(NativeClass)]
 #[inherit(Node)]
 pub struct GodotGGRS {
-    sess: Option<ggrs::P2PSession>,
+    sess: Option<P2PSession>,
     callback_nodepath: String,
     next_handle: usize,
 }
@@ -29,7 +30,7 @@ impl GodotGGRS {
     #[export]
     fn create_session(&mut self, _owner: &Node, local_port: u16, num_players: u32) {
         let input_size: usize = std::mem::size_of::<u32>();
-        match ggrs::start_p2p_session(num_players, input_size, local_port) {
+        match start_p2p_session(num_players, input_size, local_port) {
             Ok(s) => self.sess = Some(s),
             Err(e) => godot_print!("{:?}", e),
         }
@@ -37,22 +38,22 @@ impl GodotGGRS {
 
     #[export]
     fn add_local_player(&mut self, _owner: &Node) -> usize {
-        self.add_player(ggrs::PlayerType::Local)
+        self.add_player(PlayerType::Local)
     }
 
     #[export]
     fn add_remote_player(&mut self, _owner: &Node, address: String) -> usize {
         let remote_addr: std::net::SocketAddr = address.parse().unwrap();
-        self.add_player(ggrs::PlayerType::Remote(remote_addr))
+        self.add_player(PlayerType::Remote(remote_addr))
     }
 
     #[export]
     fn add_spectator(&mut self, _owner: &Node, address: String) -> usize {
         let remote_addr: std::net::SocketAddr = address.parse().unwrap();
-        self.add_player(ggrs::PlayerType::Spectator(remote_addr))
+        self.add_player(PlayerType::Spectator(remote_addr))
     }
 
-    fn add_player(&mut self, player_type: ggrs::PlayerType) -> usize {
+    fn add_player(&mut self, player_type: PlayerType) -> usize {
         match &mut self.sess {
             Some(s) => match s.add_player(player_type, self.next_handle) {
                 Ok(o) => {
