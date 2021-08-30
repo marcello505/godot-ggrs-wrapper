@@ -1,7 +1,6 @@
 use gdnative::prelude::*;
 use ggrs::*;
 use std::option::*;
-use gdnative::core_types::ToVariant;
 
 #[derive(NativeClass)]
 #[inherit(Node)]
@@ -9,6 +8,7 @@ pub struct GodotGGRS {
     sess: Option<P2PSession>,
     callback_node: Option<Ref<Node>>,
     next_handle: usize,
+    stored_cell: GameStateCell
 }
 
 impl GodotGGRS {
@@ -17,6 +17,7 @@ impl GodotGGRS {
             sess: None,
             callback_node: None,
             next_handle: 0,
+            stored_cell: GameStateCell::default()
         }
     }
 }
@@ -69,7 +70,7 @@ impl GodotGGRS {
     }
 
     #[export]
-    fn advance_frame(&mut self, _owner: &Node, local_player_handle: usize, local_input: [u8; 32]){
+    fn advance_frame(&mut self, _owner: &Node, local_player_handle: usize, local_input: &Vec<u8>){
         if self.callback_node.is_none(){
             godot_print!("Can't advance frame, no callback_node was set");
             panic!();
@@ -80,12 +81,15 @@ impl GodotGGRS {
         }
         let callback = &self.callback_node.unwrap();
         let sess = &self.sess.unwrap();
+        let local_input_array: &[u8] = &local_input[0..local_input.len()];
 
-        match sess.advance_frame(local_player_handle, &local_input){
+        match sess.advance_frame(local_player_handle, local_input_array){
             Ok(requests) => {
                 for item in requests{
                     match item{
-                        GGRSRequest::AdvanceFrame {inputs} => unsafe{ callback.call("ggrs_advance_frame", &[inputs.to_variant()]) },
+                        GGRSRequest::AdvanceFrame {inputs} => self.ggrs_request_advance_fame(inputs),
+                        GGRSRequest::LoadGameState { cell } => self.ggrs_request_load_game_state(cell),
+                        GGRSRequest::SaveGameState { cell, frame } => self.ggrs_request_save_game_state(cell, frame),
                     }
                 }
             },
@@ -95,6 +99,20 @@ impl GodotGGRS {
             }
         }
     }
+
+    fn ggrs_request_advance_fame(&self, inputs: Vec<ggrs::GameInput>){
+        //Parse parameter inputs in a way that godot can handle then call the callback method
+    }
+
+    fn ggrs_request_load_game_state(&self, cell: GameStateCell){
+        //Unpack the cell and have over it's values to godot so it can handle it.
+    }
+
+    fn ggrs_request_save_game_state(&self, cell: GameStateCell, frame: Frame){
+        //Store current cell for later use
+        self.stored_cell = cell;
+    }
+    
 
     fn add_player(&mut self, player_type: PlayerType) -> usize {
         match &mut self.sess {
