@@ -1,12 +1,13 @@
 use gdnative::prelude::*;
 use ggrs::*;
 use std::option::*;
+use gdnative::core_types::ToVariant;
 
 #[derive(NativeClass)]
 #[inherit(Node)]
 pub struct GodotGGRS {
     sess: Option<P2PSession>,
-    callback_nodepath: String,
+    callback_node: Option<Ref<Node>>,
     next_handle: usize,
 }
 
@@ -14,7 +15,7 @@ impl GodotGGRS {
     fn new(_owner: &Node) -> Self {
         GodotGGRS {
             sess: None,
-            callback_nodepath: "../.".to_string(),
+            callback_node: None,
             next_handle: 0,
         }
     }
@@ -67,6 +68,34 @@ impl GodotGGRS {
         }
     }
 
+    #[export]
+    fn advance_frame(&mut self, _owner: &Node, local_player_handle: usize, local_input: [u8; 32]){
+        if self.callback_node.is_none(){
+            godot_print!("Can't advance frame, no callback_node was set");
+            panic!();
+        }
+        if self.sess.is_none(){
+            godot_print!("Can't advance frame, no session was created");
+            panic!();
+        }
+        let callback = &self.callback_node.unwrap();
+        let sess = &self.sess.unwrap();
+
+        match sess.advance_frame(local_player_handle, &local_input){
+            Ok(requests) => {
+                for item in requests{
+                    match item{
+                        GGRSRequest::AdvanceFrame {inputs} => unsafe{ callback.call("ggrs_advance_frame", &[inputs.to_variant()]) },
+                    }
+                }
+            },
+            Err(e)=>{
+                godot_print!("{}", e);
+                panic!()
+            }
+        }
+    }
+
     fn add_player(&mut self, player_type: PlayerType) -> usize {
         match &mut self.sess {
             Some(s) => match s.add_player(player_type, self.next_handle) {
@@ -87,8 +116,8 @@ impl GodotGGRS {
     }
 
     #[export]
-    fn receive_callback_node(&mut self, _owner: &Node, nodepath: String) {
-        self.callback_nodepath = nodepath;
+    fn receive_callback_node(&mut self, _owner: &Node, callback: Ref<Node>) {
+        self.callback_node = Some(callback);
     }
 }
 
