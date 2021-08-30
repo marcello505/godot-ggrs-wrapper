@@ -53,6 +53,20 @@ impl GodotGGRS {
         self.add_player(PlayerType::Spectator(remote_addr))
     }
 
+    #[export]
+    fn start_session(&mut self, _owner: &Node){
+        match &mut self.sess{
+            Some(s) => match s.start_session(){
+                Ok(_) => godot_print!("Started GodotGGRS session"),
+                Err(e) => {
+                    godot_print!("{}", e);
+                    panic!()
+                }
+            }
+            None => {}
+        }
+    }
+
     fn add_player(&mut self, player_type: PlayerType) -> usize {
         match &mut self.sess {
             Some(s) => match s.add_player(player_type, self.next_handle) {
