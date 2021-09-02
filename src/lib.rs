@@ -70,12 +70,7 @@ impl GodotGGRS {
     }
 
     #[export]
-    fn advance_frame(
-        &mut self,
-        _owner: &Node,
-        local_player_handle: usize,
-        local_input: Int32Array,
-    ) {
+    fn advance_frame(&mut self, _owner: &Node, local_player_handle: usize, local_input: ByteArray) {
         if self.callback_node.is_none() {
             godot_print!("Can't advance frame, no callback_node was set");
             panic!();
@@ -88,7 +83,7 @@ impl GodotGGRS {
         let mut local_input_array: Vec<u8> = Vec::new();
         //Convert local_input into a Rust parsable array
         for i in 0..local_input.len() {
-            local_input_array.push(local_input.get(i) as u8);
+            local_input_array.push(local_input.get(i));
         }
         let local_input_array_slice: &[u8] = &local_input_array[0..local_input_array.len()];
 
@@ -109,13 +104,13 @@ impl GodotGGRS {
         }
     }
 
-    fn handle_requests(&self, requests: Vec<GGRSRequest>) {
+    fn handle_requests(&mut self, requests: Vec<GGRSRequest>) {
         for item in requests {
             match item {
                 GGRSRequest::AdvanceFrame { inputs } => self.ggrs_request_advance_fame(inputs),
                 GGRSRequest::LoadGameState { cell } => self.ggrs_request_load_game_state(cell),
                 GGRSRequest::SaveGameState { cell, frame } => {
-                    self.ggrs_request_save_game_state(cell, frame)
+                    self.ggrs_request_save_game_state(cell, frame);
                 }
             }
         }
