@@ -71,6 +71,14 @@ impl GodotGGRS {
     }
 
     #[export]
+    fn is_running(&mut self, _owner: &Node) -> bool {
+        match &mut self.sess {
+            Some(s) => s.current_state() == SessionState::Running,
+            None => false,
+        }
+    }
+
+    #[export]
     fn advance_frame(&mut self, _owner: &Node, local_player_handle: usize, local_input: ByteArray) {
         if self.callback_node.is_none() {
             godot_print!("Can't advance frame, no callback_node was set");
