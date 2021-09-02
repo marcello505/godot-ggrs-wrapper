@@ -80,7 +80,6 @@ impl GodotGGRS {
             godot_print!("Can't advance frame, no session was created");
             panic!();
         }
-        let callback = &self.callback_node.unwrap();
         let mut local_input_array: Vec<u8> = Vec::new();
         //Convert local_input into a Rust parsable array
         for i in 0..local_input.len() {
