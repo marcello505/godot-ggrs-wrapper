@@ -1,3 +1,4 @@
+use gdnative::core_types::ToVariant;
 use gdnative::prelude::*;
 use ggrs::*;
 use std::option::*;
@@ -122,6 +123,20 @@ impl GodotGGRS {
 
     fn ggrs_request_load_game_state(&self, cell: GameStateCell) {
         //Unpack the cell and have over it's values to godot so it can handle it.
+        match self.callback_node {
+            Some(s) => {
+                let node = unsafe { s.assume_safe() };
+                let game_state = cell.load();
+                let frame = game_state.frame.to_variant();
+                let buffer = game_state.buffer.unwrap_or_default().to_variant();
+                let checksum = game_state.checksum.to_variant();
+                unsafe { node.call("ggrs_load_game_state", &[frame, buffer, checksum]) };
+            }
+            None => {
+                godot_print!("No callback node was specified.");
+                panic!();
+            }
+        }
     }
 
     fn ggrs_request_save_game_state(&mut self, cell: GameStateCell, frame: Frame) {
