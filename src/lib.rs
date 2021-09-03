@@ -218,7 +218,7 @@ impl GodotGGRSP2PSession {
 }
 
 fn init(handle: InitHandle) {
-    handle.add_class::<GodotGGRS>();
+    handle.add_class::<GodotGGRSP2PSession>();
 }
 
 godot_init!(init);
