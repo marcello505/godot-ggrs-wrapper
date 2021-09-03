@@ -38,7 +38,7 @@ impl GodotGGRSP2PSession {
         let input_size: usize = std::mem::size_of::<u32>();
         match start_p2p_session(num_players, input_size, local_port) {
             Ok(s) => self.sess = Some(s),
-            Err(e) => godot_print!("{:?}", e),
+            Err(e) => godot_error!("{}", e),
         }
     }
 
@@ -65,7 +65,7 @@ impl GodotGGRSP2PSession {
             Some(s) => match s.start_session() {
                 Ok(_) => godot_print!("Started GodotGGRS session"),
                 Err(e) => {
-                    godot_print!("{}", e);
+                    godot_error!("{}", e);
                     panic!()
                 }
             },
@@ -84,11 +84,11 @@ impl GodotGGRSP2PSession {
     #[export]
     fn advance_frame(&mut self, _owner: &Node, local_player_handle: usize, local_input: ByteArray) {
         if self.callback_node.is_none() {
-            godot_print!("Can't advance frame, no callback_node was set");
+            godot_error!("Can't advance frame, no callback_node was set");
             panic!();
         }
         if self.sess.is_none() {
-            godot_print!("Can't advance frame, no session was created");
+            godot_error!("Can't advance frame, no session was created");
             panic!();
         }
         let mut local_input_array: Vec<u8> = Vec::new();
@@ -104,12 +104,12 @@ impl GodotGGRSP2PSession {
                     self.handle_requests(requests);
                 }
                 Err(e) => {
-                    godot_print!("{}", e);
+                    godot_error!("{}", e);
                     panic!();
                 }
             },
             None => {
-                godot_print!("No session was made");
+                godot_error!("No session was made");
                 panic!();
             }
         }
@@ -139,7 +139,7 @@ impl GodotGGRSP2PSession {
     fn poll_remote_clients(&mut self, _owner: &Node) {
         match &mut self.sess {
             Some(s) => s.poll_remote_clients(),
-            None => return,
+            None => godot_error!("No session made."),
         }
     }
 
@@ -148,7 +148,7 @@ impl GodotGGRSP2PSession {
         match &mut self.sess {
             Some(s) => match s.network_stats(handle) {
                 Ok(n) => godot_print!("send_queue_len: {0}; ping: {1}; kbps_sent: {2}; local_frames_behind: {3}; remote_frames_behind: {4};", n.send_queue_len, n.ping, n.kbps_sent, n.local_frames_behind, n.remote_frames_behind),
-                Err(e) => godot_print!("{}", e),
+                Err(e) => godot_error!("{}", e),
             },
             None => return,
         }
@@ -181,7 +181,7 @@ impl GodotGGRSP2PSession {
                 unsafe { node.call("ggrs_advance_frame", &godot_array[..]) };
             }
             None => {
-                godot_print!("No callback node was specified");
+                godot_error!("No callback node was specified.");
                 panic!();
             }
         }
@@ -199,7 +199,7 @@ impl GodotGGRSP2PSession {
                 unsafe { node.call("ggrs_load_game_state", &[frame, buffer, checksum]) };
             }
             None => {
-                godot_print!("No callback node was specified.");
+                godot_error!("No callback node was specified.");
                 panic!();
             }
         }
@@ -214,7 +214,7 @@ impl GodotGGRSP2PSession {
                 unsafe { node.call("ggrs_save_game_state", &[frame.to_variant()]) };
             }
             None => {
-                godot_print!("No callback node was specified.");
+                godot_error!("No callback node was specified.");
                 panic!();
             }
         }
@@ -228,12 +228,12 @@ impl GodotGGRSP2PSession {
                     return o;
                 }
                 Err(e) => {
-                    godot_print!("{}", e);
+                    godot_error!("{}", e);
                     panic!()
                 }
             },
             None => {
-                godot_print!("No session was made.");
+                godot_error!("No session was made.");
                 panic!()
             }
         };
