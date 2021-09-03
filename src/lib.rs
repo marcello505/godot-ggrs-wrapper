@@ -181,7 +181,6 @@ impl GodotGGRS {
     fn save_game_state(&self, _owner: &Node, frame: Frame, buffer: ByteArray, checksum: u64) {
         //This should be called by the callback node when it's ready to save the state
         let mut buffer_vec: Vec<u8> = Vec::new();
-        //Convert local_input into a Rust parsable array
         for i in 0..buffer.len() {
             buffer_vec.push(buffer.get(i));
         }
