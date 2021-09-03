@@ -1,6 +1,7 @@
 use gdnative::core_types::ToVariant;
 use gdnative::prelude::*;
 use ggrs::*;
+use std::convert::TryInto;
 use std::option::*;
 
 mod godotggrs_synctest;
@@ -11,7 +12,6 @@ pub struct GodotGGRSP2PSession {
     sess: Option<P2PSession>,
     callback_node: Option<Ref<Node>>,
     next_handle: usize,
-    stored_cell: GameStateCell,
 }
 
 impl GodotGGRSP2PSession {
@@ -20,7 +20,6 @@ impl GodotGGRSP2PSession {
             sess: None,
             callback_node: None,
             next_handle: 0,
-            stored_cell: GameStateCell::default(),
         }
     }
 }
@@ -69,7 +68,9 @@ impl GodotGGRSP2PSession {
                     panic!()
                 }
             },
-            None => {}
+            None => {
+                godot_error!("No session was made.")
+            }
         }
     }
 
@@ -82,7 +83,7 @@ impl GodotGGRSP2PSession {
     }
 
     #[export]
-    fn advance_frame(&mut self, _owner: &Node, local_player_handle: usize, local_input: ByteArray) {
+    fn advance_frame(&mut self, _owner: &Node, local_player_handle: usize, local_input: u32) {
         if self.callback_node.is_none() {
             godot_error!("Can't advance frame, no callback_node was set");
             panic!();
@@ -91,12 +92,9 @@ impl GodotGGRSP2PSession {
             godot_error!("Can't advance frame, no session was created");
             panic!();
         }
-        let mut local_input_array: Vec<u8> = Vec::new();
-        //Convert local_input into a Rust parsable array
-        for i in 0..local_input.len() {
-            local_input_array.push(local_input.get(i));
-        }
-        let local_input_array_slice: &[u8] = &local_input_array[..];
+        //Convert local_input into a byte array
+        let local_input_bytes = local_input.to_be_bytes();
+        let local_input_array_slice: &[u8] = &local_input_bytes[..];
 
         match &mut self.sess {
             Some(s) => match s.advance_frame(local_player_handle, local_input_array_slice) {
@@ -113,21 +111,6 @@ impl GodotGGRSP2PSession {
                 panic!();
             }
         }
-    }
-
-    #[export]
-    fn save_game_state(&self, _owner: &Node, frame: Frame, buffer: ByteArray, checksum: u64) {
-        //This should be called by the callback node when it's ready to save the state
-        let mut buffer_vec: Vec<u8> = Vec::new();
-        for i in 0..buffer.len() {
-            buffer_vec.push(buffer.get(i));
-        }
-        let result = GameState {
-            frame: frame,
-            buffer: Some(buffer_vec),
-            checksum: checksum,
-        };
-        self.stored_cell.save(result);
     }
 
     #[export]
@@ -150,7 +133,7 @@ impl GodotGGRSP2PSession {
                 Ok(n) => godot_print!("send_queue_len: {0}; ping: {1}; kbps_sent: {2}; local_frames_behind: {3}; remote_frames_behind: {4};", n.send_queue_len, n.ping, n.kbps_sent, n.local_frames_behind, n.remote_frames_behind),
                 Err(e) => godot_error!("{}", e),
             },
-            None => return,
+            None => godot_error!("No session made."),
         }
     }
 
@@ -183,13 +166,21 @@ impl GodotGGRSP2PSession {
         match self.callback_node {
             Some(s) => {
                 let node = unsafe { s.assume_safe() };
-                let mut godot_array = Vec::new();
+                let mut godot_array: Vec<Variant> = Vec::new();
                 for i in inputs {
-                    let result =
-                        (i.frame, i.size, ByteArray::from_slice(&i.buffer[..])).to_variant();
+                    let result = (
+                        i.frame,
+                        i.size,
+                        u32::from_be_bytes(
+                            i.buffer[..i.size]
+                                .try_into()
+                                .expect("Slice size is too big or too small to convert into u32"),
+                        ),
+                    )
+                        .to_variant();
                     godot_array.push(result);
                 }
-                unsafe { node.call("ggrs_advance_frame", &godot_array[..]) };
+                unsafe { node.call("ggrs_advance_frame", &[godot_array.to_variant()]) };
             }
             None => {
                 godot_error!("No callback node was specified.");
@@ -218,11 +209,18 @@ impl GodotGGRSP2PSession {
 
     fn ggrs_request_save_game_state(&mut self, cell: GameStateCell, frame: Frame) {
         //Store current cell for later use
-        self.stored_cell = cell;
         match self.callback_node {
             Some(s) => {
                 let node = unsafe { s.assume_safe() };
-                unsafe { node.call("ggrs_save_game_state", &[frame.to_variant()]) };
+                let state: Variant =
+                    unsafe { node.call("ggrs_save_game_state", &[frame.to_variant()]) };
+                let state_dict = Dictionary::from_variant(&state).unwrap_or_default();
+                let result = GameState {
+                    checksum: state_dict.hash() as u64,
+                    buffer: None,
+                    frame: frame,
+                };
+                cell.save(result);
             }
             None => {
                 godot_error!("No callback node was specified.");
@@ -251,9 +249,50 @@ impl GodotGGRSP2PSession {
     }
 }
 
+pub fn init_panic_hook() {
+    // To enable backtrace, you will need the `backtrace` crate to be included in your cargo.toml, or
+    // a version of rust where backtrace is included in the standard library (e.g. Rust nightly as of the date of publishing)
+    // use backtrace::Backtrace;
+    // use std::backtrace::Backtrace;
+    let old_hook = std::panic::take_hook();
+    std::panic::set_hook(Box::new(move |panic_info| {
+        let loc_string;
+        if let Some(location) = panic_info.location() {
+            loc_string = format!("file '{}' at line {}", location.file(), location.line());
+        } else {
+            loc_string = "unknown location".to_owned()
+        }
+
+        let error_message;
+        if let Some(s) = panic_info.payload().downcast_ref::<&str>() {
+            error_message = format!("[RUST] {}: panic occurred: {:?}", loc_string, s);
+        } else if let Some(s) = panic_info.payload().downcast_ref::<String>() {
+            error_message = format!("[RUST] {}: panic occurred: {:?}", loc_string, s);
+        } else {
+            error_message = format!("[RUST] {}: unknown panic occurred", loc_string);
+        }
+        godot_error!("{}", error_message);
+        // Uncomment the following line if backtrace crate is included as a dependency
+        // godot_error!("Backtrace:\n{:?}", Backtrace::new());
+        (*(old_hook.as_ref()))(panic_info);
+
+        unsafe {
+            if let Some(gd_panic_hook) =
+                gdnative::api::utils::autoload::<gdnative::api::Node>("RustPanicHook")
+            {
+                gd_panic_hook.call(
+                    "rust_panic_hook",
+                    &[GodotString::from_str(error_message).to_variant()],
+                );
+            }
+        }
+    }));
+}
+
 fn init(handle: InitHandle) {
     handle.add_class::<GodotGGRSP2PSession>();
     handle.add_class::<godotggrs_synctest::GodotGGRSSyncTest>();
+    init_panic_hook()
 }
 
 godot_init!(init);
