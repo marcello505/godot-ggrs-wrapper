@@ -5,16 +5,16 @@ use std::option::*;
 
 #[derive(NativeClass)]
 #[inherit(Node)]
-pub struct GodotGGRS {
+pub struct GodotGGRSP2PSession {
     sess: Option<P2PSession>,
     callback_node: Option<Ref<Node>>,
     next_handle: usize,
     stored_cell: GameStateCell,
 }
 
-impl GodotGGRS {
+impl GodotGGRSP2PSession {
     fn new(_owner: &Node) -> Self {
-        GodotGGRS {
+        GodotGGRSP2PSession {
             sess: None,
             callback_node: None,
             next_handle: 0,
@@ -24,7 +24,7 @@ impl GodotGGRS {
 }
 
 #[methods]
-impl GodotGGRS {
+impl GodotGGRSP2PSession {
     #[export]
     fn _ready(&self, _owner: &Node) {
         godot_print!("GodotGGRS _ready() called.");
