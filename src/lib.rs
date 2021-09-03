@@ -93,7 +93,7 @@ impl GodotGGRS {
         for i in 0..local_input.len() {
             local_input_array.push(local_input.get(i));
         }
-        let local_input_array_slice: &[u8] = &local_input_array[0..local_input_array.len()];
+        let local_input_array_slice: &[u8] = &local_input_array[..];
 
         match &mut self.sess {
             Some(s) => match s.advance_frame(local_player_handle, local_input_array_slice) {
@@ -126,6 +126,22 @@ impl GodotGGRS {
 
     fn ggrs_request_advance_fame(&self, inputs: Vec<ggrs::GameInput>) {
         //Parse parameter inputs in a way that godot can handle then call the callback method
+        match self.callback_node {
+            Some(s) => {
+                let node = unsafe { s.assume_safe() };
+                let mut godot_array = Vec::new();
+                for i in inputs {
+                    let result =
+                        (i.frame, i.size, ByteArray::from_slice(&i.buffer[..])).to_variant();
+                    godot_array.push(result);
+                }
+                unsafe { node.call("ggrs_advance_frame", &godot_array[..]) };
+            }
+            None => {
+                godot_print!("No callback node was specified");
+                panic!();
+            }
+        }
     }
 
     fn ggrs_request_load_game_state(&self, cell: GameStateCell) {
