@@ -3,6 +3,8 @@ use gdnative::prelude::*;
 use ggrs::*;
 use std::option::*;
 
+mod godotggrs_synctest;
+
 #[derive(NativeClass)]
 #[inherit(Node)]
 pub struct GodotGGRSP2PSession {
@@ -27,7 +29,7 @@ impl GodotGGRSP2PSession {
 impl GodotGGRSP2PSession {
     #[export]
     fn _ready(&self, _owner: &Node) {
-        godot_print!("GodotGGRS _ready() called.");
+        godot_print!("GodotGGRSP2PSession _ready() called.");
     }
 
     #[export]
@@ -219,6 +221,7 @@ impl GodotGGRSP2PSession {
 
 fn init(handle: InitHandle) {
     handle.add_class::<GodotGGRSP2PSession>();
+    handle.add_class::<godotggrs_synctest::GodotGGRSSyncTest>();
 }
 
 godot_init!(init);
