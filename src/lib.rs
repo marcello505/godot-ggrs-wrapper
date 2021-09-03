@@ -5,6 +5,7 @@ use std::convert::TryInto;
 use std::option::*;
 
 mod godotggrs_synctest;
+mod helper_functions;
 
 #[derive(NativeClass)]
 #[inherit(Node)]
@@ -196,7 +197,9 @@ impl GodotGGRSP2PSession {
                 let node = unsafe { s.assume_safe() };
                 let game_state = cell.load();
                 let frame = game_state.frame.to_variant();
-                let buffer = game_state.buffer.unwrap_or_default().to_variant();
+                let buffer = String::from_utf8(game_state.buffer.unwrap_or_default())
+                    .unwrap_or_default()
+                    .to_variant();
                 let checksum = game_state.checksum.to_variant();
                 unsafe { node.call("ggrs_load_game_state", &[frame, buffer, checksum]) };
             }
@@ -214,10 +217,11 @@ impl GodotGGRSP2PSession {
                 let node = unsafe { s.assume_safe() };
                 let state: Variant =
                     unsafe { node.call("ggrs_save_game_state", &[frame.to_variant()]) };
-                let state_dict = Dictionary::from_variant(&state).unwrap_or_default();
+                let json = state.to_string();
+                let json_bytes = json.as_bytes();
                 let result = GameState {
-                    checksum: state_dict.hash() as u64,
-                    buffer: None,
+                    checksum: helper_functions::fletcher16(json_bytes) as u64,
+                    buffer: Some(Vec::from(json_bytes)),
                     frame: frame,
                 };
                 cell.save(result);
