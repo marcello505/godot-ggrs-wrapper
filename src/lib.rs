@@ -27,6 +27,7 @@ impl GodotGGRSP2PSession {
 
 #[methods]
 impl GodotGGRSP2PSession {
+    //EXPORTED FUNCTIONS
     #[export]
     fn _ready(&self, _owner: &Node) {
         godot_print!("GodotGGRSP2PSession _ready() called.");
@@ -114,6 +115,46 @@ impl GodotGGRSP2PSession {
         }
     }
 
+    #[export]
+    fn save_game_state(&self, _owner: &Node, frame: Frame, buffer: ByteArray, checksum: u64) {
+        //This should be called by the callback node when it's ready to save the state
+        let mut buffer_vec: Vec<u8> = Vec::new();
+        for i in 0..buffer.len() {
+            buffer_vec.push(buffer.get(i));
+        }
+        let result = GameState {
+            frame: frame,
+            buffer: Some(buffer_vec),
+            checksum: checksum,
+        };
+        self.stored_cell.save(result);
+    }
+
+    #[export]
+    fn receive_callback_node(&mut self, _owner: &Node, callback: Ref<Node>) {
+        self.callback_node = Some(callback);
+    }
+
+    #[export]
+    fn poll_remote_clients(&mut self, _owner: &Node) {
+        match &mut self.sess {
+            Some(s) => s.poll_remote_clients(),
+            None => return,
+        }
+    }
+
+    #[export]
+    fn print_network_stats(&mut self, _owner: &Node, handle: usize) {
+        match &mut self.sess {
+            Some(s) => match s.network_stats(handle) {
+                Ok(n) => godot_print!("send_queue_len: {0}; ping: {1}; kbps_sent: {2}; local_frames_behind: {3}; remote_frames_behind: {4};", n.send_queue_len, n.ping, n.kbps_sent, n.local_frames_behind, n.remote_frames_behind),
+                Err(e) => godot_print!("{}", e),
+            },
+            None => return,
+        }
+    }
+
+    //NON-EXPORTED FUNCTIONS
     fn handle_requests(&mut self, requests: Vec<GGRSRequest>) {
         for item in requests {
             match item {
@@ -179,21 +220,6 @@ impl GodotGGRSP2PSession {
         }
     }
 
-    #[export]
-    fn save_game_state(&self, _owner: &Node, frame: Frame, buffer: ByteArray, checksum: u64) {
-        //This should be called by the callback node when it's ready to save the state
-        let mut buffer_vec: Vec<u8> = Vec::new();
-        for i in 0..buffer.len() {
-            buffer_vec.push(buffer.get(i));
-        }
-        let result = GameState {
-            frame: frame,
-            buffer: Some(buffer_vec),
-            checksum: checksum,
-        };
-        self.stored_cell.save(result);
-    }
-
     fn add_player(&mut self, player_type: PlayerType) -> usize {
         match &mut self.sess {
             Some(s) => match s.add_player(player_type, self.next_handle) {
@@ -211,11 +237,6 @@ impl GodotGGRSP2PSession {
                 panic!()
             }
         };
-    }
-
-    #[export]
-    fn receive_callback_node(&mut self, _owner: &Node, callback: Ref<Node>) {
-        self.callback_node = Some(callback);
     }
 }
 
