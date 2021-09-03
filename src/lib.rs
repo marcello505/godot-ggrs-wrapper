@@ -165,6 +165,32 @@ impl GodotGGRS {
     fn ggrs_request_save_game_state(&mut self, cell: GameStateCell, frame: Frame) {
         //Store current cell for later use
         self.stored_cell = cell;
+        match self.callback_node {
+            Some(s) => {
+                let node = unsafe { s.assume_safe() };
+                unsafe { node.call("ggrs_save_game_state", &[frame.to_variant()]) };
+            }
+            None => {
+                godot_print!("No callback node was specified.");
+                panic!();
+            }
+        }
+    }
+
+    #[export]
+    fn save_game_state(&self, _owner: &Node, frame: Frame, buffer: ByteArray, checksum: u64) {
+        //This should be called by the callback node when it's ready to save the state
+        let mut buffer_vec: Vec<u8> = Vec::new();
+        //Convert local_input into a Rust parsable array
+        for i in 0..buffer.len() {
+            buffer_vec.push(buffer.get(i));
+        }
+        let result = GameState {
+            frame: frame,
+            buffer: Some(buffer_vec),
+            checksum: checksum,
+        };
+        self.stored_cell.save(result);
     }
 
     fn add_player(&mut self, player_type: PlayerType) -> usize {
