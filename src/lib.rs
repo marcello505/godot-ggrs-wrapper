@@ -144,13 +144,24 @@ impl GodotGGRSP2PSession {
     }
 
     #[export]
-    fn print_network_stats(&mut self, _owner: &Node, handle: usize) {
+    fn print_network_stats(&mut self, _owner: &Node, handle: PlayerHandle) {
         match &mut self.sess {
             Some(s) => match s.network_stats(handle) {
                 Ok(n) => godot_print!("send_queue_len: {0}; ping: {1}; kbps_sent: {2}; local_frames_behind: {3}; remote_frames_behind: {4};", n.send_queue_len, n.ping, n.kbps_sent, n.local_frames_behind, n.remote_frames_behind),
                 Err(e) => godot_error!("{}", e),
             },
             None => return,
+        }
+    }
+
+    #[export]
+    fn set_frame_delay(&mut self, _owner: &Node, frame_delay: u32, player_handle: PlayerHandle) {
+        match &mut self.sess {
+            Some(s) => match s.set_frame_delay(frame_delay, player_handle) {
+                Ok(_) => return,
+                Err(e) => godot_error!("{}", e),
+            },
+            None => godot_error!("No session made."),
         }
     }
 
