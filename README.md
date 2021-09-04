@@ -35,7 +35,7 @@ func _ready():
 	$GodotGGRS.start_session() #Start listening for a session.
 ```
 
-As you can see we swap the order of adding players depending on who's the "host". In reality since it's a peer 2 peer library, there is no true host. However you should have a way to distinguish between player 1 and player 2.\
+As you can see we swap the order of adding players depending on who's the "host". In reality since it's a peer 2 peer library, there is no true host. However you should have a way to distinguish between player 1 and player 2.
 
 ### Advancing frames
 
