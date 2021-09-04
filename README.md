@@ -110,3 +110,16 @@ func _set_action(action: String, pressed: bool):
 		Input.action_release(action)
 
 ```
+
+## Handling Rust Panics
+
+Create a godot script containing the following:
+
+```gdscript
+extends Node
+
+func rust_panic_hook(error_msg: String) -> void:
+    assert(false, error_msg)
+```
+
+Make the Godot Project autoload this script as a singleton using the following name: "RustPanicHook". Now all Rust panics should always be catched properly. This solution is based off of the [Godot-Rust - Rust Panic Hook Recipe](https://godot-rust.github.io/book/recipes/rust_panic_handler.html).
