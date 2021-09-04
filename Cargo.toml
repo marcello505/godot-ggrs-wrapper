@@ -8,7 +8,7 @@ authors = ["Marcello Haddeman <haddemanmarcello@gmail.com>"]
 
 [dependencies]
 gdnative = "0.9.3"
-ggrs = "0.4.3"
+ggrs = "0.4.4"
 
 [lib]
 crate-type = ["cdylib"]
