@@ -113,6 +113,17 @@ impl GodotGGRSP2PSession {
     }
 
     #[export]
+    fn set_fps(&mut self, _owner: &Node, fps: u32) {
+        match &mut self.sess {
+            Some(s) => match s.set_fps(fps) {
+                Ok(_) => return,
+                Err(e) => godot_error!("{}", e),
+            },
+            None => godot_error!("No session made."),
+        }
+    }
+
+    #[export]
     fn receive_callback_node(&mut self, _owner: &Node, callback: Ref<Node>) {
         self.callback_node = Some(callback);
     }
