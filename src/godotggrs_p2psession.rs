@@ -64,7 +64,6 @@ impl GodotGGRSP2PSession {
                 Ok(_) => godot_print!("Started GodotGGRS session"),
                 Err(e) => {
                     godot_error!("{}", e);
-                    panic!()
                 }
             },
             None => {
@@ -83,14 +82,6 @@ impl GodotGGRSP2PSession {
 
     #[export]
     fn advance_frame(&mut self, _owner: &Node, local_player_handle: usize, local_input: u32) {
-        if self.callback_node.is_none() {
-            godot_error!("Can't advance frame, no callback_node was set");
-            panic!();
-        }
-        if self.sess.is_none() {
-            godot_error!("Can't advance frame, no session was created");
-            panic!();
-        }
         //Convert local_input into a byte array
         let local_input_bytes = local_input.to_be_bytes();
         let local_input_array_slice: &[u8] = &local_input_bytes[..];
@@ -102,12 +93,10 @@ impl GodotGGRSP2PSession {
                 }
                 Err(e) => {
                     godot_error!("{}", e);
-                    panic!();
                 }
             },
             None => {
                 godot_error!("No session was made");
-                panic!();
             }
         }
     }
@@ -183,7 +172,6 @@ impl GodotGGRSP2PSession {
             }
             None => {
                 godot_error!("No callback node was specified.");
-                panic!();
             }
         }
     }
@@ -202,7 +190,6 @@ impl GodotGGRSP2PSession {
             }
             None => {
                 godot_error!("No callback node was specified.");
-                panic!();
             }
         }
     }
@@ -228,7 +215,6 @@ impl GodotGGRSP2PSession {
             }
             None => {
                 godot_error!("No callback node was specified.");
-                panic!();
             }
         }
     }

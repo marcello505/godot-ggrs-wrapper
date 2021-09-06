@@ -103,7 +103,6 @@ impl GodotGGRSSyncTest {
             }
             None => {
                 godot_error!("No callback node was specified.");
-                panic!();
             }
         }
     }
@@ -122,7 +121,6 @@ impl GodotGGRSSyncTest {
             }
             None => {
                 godot_error!("No callback node was specified.");
-                panic!();
             }
         }
     }
@@ -148,7 +146,6 @@ impl GodotGGRSSyncTest {
             }
             None => {
                 godot_error!("No callback node was specified.");
-                panic!();
             }
         }
     }
