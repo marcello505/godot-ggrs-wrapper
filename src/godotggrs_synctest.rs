@@ -24,7 +24,7 @@ impl GodotGGRSSyncTest {
     //EXPORTED FUNCTIONS
     #[export]
     fn _ready(&self, _owner: &Node) {
-        godot_print!("GodotGGRSP2PSession _ready() called.");
+        godot_print!("GodotGGRSSyncTest _ready() called.");
     }
 
     #[export]
@@ -65,6 +65,11 @@ impl GodotGGRSSyncTest {
                 godot_error!("No session was made")
             }
         }
+    }
+
+    #[export]
+    fn receive_callback_node(&mut self, _owner: &Node, callback: Ref<Node>) {
+        self.callback_node = Some(callback);
     }
 
     //NON-EXPORTED FUNCTIONS
