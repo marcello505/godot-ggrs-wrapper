@@ -1,6 +1,7 @@
 use gdnative::prelude::*;
 
 mod godotggrs_p2psession;
+mod godotggrs_p2pspectatorsession;
 mod godotggrs_synctest;
 mod helper_functions;
 
