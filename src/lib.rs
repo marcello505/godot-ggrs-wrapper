@@ -1,6 +1,7 @@
 use gdnative::prelude::*;
 
 mod godotggrs_p2psession;
+mod godotggrs_p2pspectatorsession;
 mod godotggrs_synctest;
 mod helper_functions;
 
@@ -47,6 +48,7 @@ pub fn init_panic_hook() {
 fn init(handle: InitHandle) {
     handle.add_class::<godotggrs_p2psession::GodotGGRSP2PSession>();
     handle.add_class::<godotggrs_synctest::GodotGGRSSyncTest>();
+    handle.add_class::<godotggrs_p2pspectatorsession::GodotGGRSP2PSpectatorSession>();
     init_panic_hook()
 }
 
