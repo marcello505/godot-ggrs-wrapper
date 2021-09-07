@@ -142,11 +142,7 @@ impl GodotGGRSSyncTest {
                 for i in 0..state_bytes.len() {
                     state_bytes_vec.push(state_bytes.get(i));
                 }
-                let result = GameState {
-                    checksum: fletcher16(&state_bytes_vec[..]) as u64,
-                    buffer: Some(state_bytes_vec),
-                    frame: frame,
-                };
+                let result = GameState::new(frame, Some(state_bytes_vec), None);
                 cell.save(result);
             }
             None => {
