@@ -5,8 +5,6 @@ use ggrs::*;
 use std::convert::TryInto;
 use std::option::*;
 
-const ERR_MESSAGE_NO_SESSION_MADE: &str = "No session was made.";
-const ERR_MESSAGE_NO_CALLBACK_NODE: &str = "No callback node was specified.";
 
 #[derive(NativeClass)]
 #[inherit(Node)]

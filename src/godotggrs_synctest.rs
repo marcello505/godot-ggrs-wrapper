@@ -43,7 +43,7 @@ impl GodotGGRSSyncTest {
                 Ok(_) => return,
                 Err(e) => godot_error!("{}", e),
             },
-            None => godot_error!("No session made."),
+            None => godot_error!("{}", ERR_MESSAGE_NO_SESSION_MADE),
         }
     }
 
@@ -62,7 +62,7 @@ impl GodotGGRSSyncTest {
                 }
             },
             None => {
-                godot_error!("No session was made")
+                godot_error!("{}", ERR_MESSAGE_NO_SESSION_MADE)
             }
         }
     }
@@ -107,7 +107,7 @@ impl GodotGGRSSyncTest {
                 unsafe { node.call("ggrs_advance_frame", &[godot_array.to_variant()]) };
             }
             None => {
-                godot_error!("No callback node was specified.");
+                godot_error!("{}", ERR_MESSAGE_NO_CALLBACK_NODE);
             }
         }
     }
@@ -125,7 +125,7 @@ impl GodotGGRSSyncTest {
                 unsafe { node.call("ggrs_load_game_state", &[frame, buffer, checksum]) };
             }
             None => {
-                godot_error!("No callback node was specified.");
+                godot_error!("{}", ERR_MESSAGE_NO_CALLBACK_NODE);
             }
         }
     }
@@ -146,7 +146,7 @@ impl GodotGGRSSyncTest {
                 cell.save(result);
             }
             None => {
-                godot_error!("No callback node was specified.");
+                godot_error!("{}", ERR_MESSAGE_NO_CALLBACK_NODE);
             }
         }
     }
