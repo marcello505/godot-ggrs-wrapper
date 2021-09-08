@@ -1,6 +1,6 @@
 [package]
 name = "godot-ggrs-wrapper"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2018"
 authors = ["Marcello Haddeman <haddemanmarcello@gmail.com>"]
 
@@ -11,4 +11,5 @@ gdnative = "0.9.3"
 ggrs = "0.4.4"
 
 [lib]
+name = "godot_ggrs_wrapper"
 crate-type = ["cdylib"]

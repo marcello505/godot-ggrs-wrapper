@@ -1,9 +1,10 @@
 # godot-ggrs-wrapper
 
-The purpose of this repo is to create a wrapper for the [ggrs](https://github.com/gschup/ggrs) Rust crate so that this can be used inside the Godot Game Engine. To accomplish this the [godot-rust](https://github.com/godot-rust/godot-rust) GDNative bindings are used. This project is a **WIP** and thus shouldn't be treated as a fully working solution yet. I'm also very much a beginner at writing Rust code so not everything might be as efficient as it could be.
+The purpose of this repo is to create a wrapper for the [ggrs](https://github.com/gschup/ggrs) Rust crate so that this can be used inside the Godot Game Engine. To accomplish this the [godot-rust](https://github.com/godot-rust/godot-rust) GDNative bindings are used. Although the project currently implements all of the GGRS features, **i can't guarantee** that it's ready for use in production.
 
 ## Notes
 
+- It's recommended that you set `reloadable` to false inside the `GDNativeLibrary` Godot resource.
 - Tested on Godot version 3.3.2, Godot 4.0 will have vastly expanded GDNative capabilities so when that comes out it can be assumed that this project will break.
 - Inputs to GodotGGRS is currently in the format of a unsigned 32-bit integer.
 - States are GodotByteArrays, you convert the godot variant to a ByteArray and give it to GodotGGRS.

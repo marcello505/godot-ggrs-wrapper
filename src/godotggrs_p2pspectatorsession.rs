@@ -63,7 +63,7 @@ impl GodotGGRSP2PSpectatorSession {
                 }
             },
             None => {
-                godot_error!("No session was made.")
+                godot_error!("{}", ERR_MESSAGE_NO_SESSION_MADE)
             }
         }
     }
@@ -85,7 +85,7 @@ impl GodotGGRSP2PSpectatorSession {
                 }
             },
             None => {
-                godot_error!("No session was made");
+                godot_error!("{}", ERR_MESSAGE_NO_SESSION_MADE);
             }
         }
     }
@@ -95,7 +95,7 @@ impl GodotGGRSP2PSpectatorSession {
         match &mut self.sess {
             Some(s) => return s.frames_behind_host(),
             None => {
-                godot_error!("No session was made");
+                godot_error!("{}", ERR_MESSAGE_NO_SESSION_MADE);
                 return 0;
             }
         }
@@ -108,7 +108,7 @@ impl GodotGGRSP2PSpectatorSession {
                 Ok(_) => return,
                 Err(e) => godot_error!("{}", e),
             },
-            None => godot_error!("No session was made"),
+            None => godot_error!("{}", ERR_MESSAGE_NO_SESSION_MADE),
         }
     }
 
@@ -119,7 +119,7 @@ impl GodotGGRSP2PSpectatorSession {
                 Ok(_) => return,
                 Err(e) => godot_error!("{}", e),
             },
-            None => godot_error!("No session was made"),
+            None => godot_error!("{}", ERR_MESSAGE_NO_SESSION_MADE),
         }
     }
 
@@ -127,7 +127,7 @@ impl GodotGGRSP2PSpectatorSession {
     fn poll_remote_clients(&mut self, _owner: &Node) {
         match &mut self.sess {
             Some(s) => s.poll_remote_clients(),
-            None => godot_error!("No session made."),
+            None => godot_error!("{}", ERR_MESSAGE_NO_SESSION_MADE),
         }
     }
 
@@ -138,7 +138,7 @@ impl GodotGGRSP2PSpectatorSession {
                 Ok(_) => return,
                 Err(e) => godot_error!("{}", e),
             },
-            None => godot_error!("No session made."),
+            None => godot_error!("{}", ERR_MESSAGE_NO_SESSION_MADE),
         }
     }
 
@@ -149,7 +149,7 @@ impl GodotGGRSP2PSpectatorSession {
                 Ok(n) => godot_print!("send_queue_len: {0}; ping: {1}; kbps_sent: {2}; local_frames_behind: {3}; remote_frames_behind: {4};", n.send_queue_len, n.ping, n.kbps_sent, n.local_frames_behind, n.remote_frames_behind),
                 Err(e) => godot_error!("{}", e),
             },
-            None => godot_error!("No session made."),
+            None => godot_error!("{}", ERR_MESSAGE_NO_SESSION_MADE),
         }
     }
     //NON-EXPORTED FUNCTIONS
@@ -188,7 +188,7 @@ impl GodotGGRSP2PSpectatorSession {
                 unsafe { node.call("ggrs_advance_frame", &[godot_array.to_variant()]) };
             }
             None => {
-                godot_error!("No callback node was specified.");
+                godot_error!("{}", ERR_MESSAGE_NO_CALLBACK_NODE);
             }
         }
     }
@@ -206,7 +206,7 @@ impl GodotGGRSP2PSpectatorSession {
                 unsafe { node.call("ggrs_load_game_state", &[frame, buffer, checksum]) };
             }
             None => {
-                godot_error!("No callback node was specified.");
+                godot_error!("{}", ERR_MESSAGE_NO_CALLBACK_NODE);
             }
         }
     }
@@ -227,7 +227,7 @@ impl GodotGGRSP2PSpectatorSession {
                 cell.save(result);
             }
             None => {
-                godot_error!("No callback node was specified.");
+                godot_error!("{}", ERR_MESSAGE_NO_CALLBACK_NODE);
             }
         }
     }
