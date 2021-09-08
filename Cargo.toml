@@ -11,4 +11,5 @@ gdnative = "0.9.3"
 ggrs = "0.4.4"
 
 [lib]
+name = "godot_ggrs_wrapper"
 crate-type = ["cdylib"]
