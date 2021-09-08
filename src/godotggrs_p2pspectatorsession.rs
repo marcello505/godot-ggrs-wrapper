@@ -1,77 +1,46 @@
 use crate::helper_functions::*;
-use gdnative::core_types::ToVariant;
 use gdnative::prelude::*;
 use ggrs::*;
 use std::convert::TryInto;
 use std::option::*;
 
-const ERR_MESSAGE_NO_SESSION_MADE: &str = "No session was made.";
-const ERR_MESSAGE_NO_CALLBACK_NODE: &str = "No callback node was specified.";
-
 #[derive(NativeClass)]
 #[inherit(Node)]
-pub struct GodotGGRSP2PSession {
-    sess: Option<P2PSession>,
+pub struct GodotGGRSP2PSpectatorSession {
+    sess: Option<P2PSpectatorSession>,
     callback_node: Option<Ref<Node>>,
-    next_handle: usize,
 }
 
-impl GodotGGRSP2PSession {
+impl GodotGGRSP2PSpectatorSession {
     fn new(_owner: &Node) -> Self {
-        GodotGGRSP2PSession {
+        GodotGGRSP2PSpectatorSession {
             sess: None,
             callback_node: None,
-            next_handle: 0,
         }
     }
 }
 
 #[methods]
-impl GodotGGRSP2PSession {
+impl GodotGGRSP2PSpectatorSession {
     //EXPORTED FUNCTIONS
     #[export]
     fn _ready(&self, _owner: &Node) {
-        godot_print!("GodotGGRSP2PSession _ready() called.");
+        godot_print!("GodotGGRSP2PSpectatorSession _ready() called.");
     }
 
     #[export]
-    fn create_session(&mut self, _owner: &Node, local_port: u16, num_players: u32) {
+    fn create_session(
+        &mut self,
+        _owner: &Node,
+        local_port: u16,
+        num_players: u32,
+        host_addr: String,
+    ) {
         let input_size: usize = std::mem::size_of::<u32>();
-        match start_p2p_session(num_players, input_size, local_port) {
+        let host_addr_object: std::net::SocketAddr = host_addr.parse().unwrap();
+        match start_p2p_spectator_session(num_players, input_size, local_port, host_addr_object) {
             Ok(s) => self.sess = Some(s),
             Err(e) => godot_error!("{}", e),
-        }
-    }
-
-    #[export]
-    fn add_local_player(&mut self, _owner: &Node) -> usize {
-        self.add_player(PlayerType::Local)
-    }
-
-    #[export]
-    fn add_remote_player(&mut self, _owner: &Node, address: String) -> usize {
-        let remote_addr: std::net::SocketAddr = address.parse().unwrap();
-        self.add_player(PlayerType::Remote(remote_addr))
-    }
-
-    #[export]
-    fn add_spectator(&mut self, _owner: &Node, address: String) -> usize {
-        let remote_addr: std::net::SocketAddr = address.parse().unwrap();
-        self.add_player(PlayerType::Spectator(remote_addr))
-    }
-
-    #[export]
-    fn start_session(&mut self, _owner: &Node) {
-        match &mut self.sess {
-            Some(s) => match s.start_session() {
-                Ok(_) => godot_print!("Started GodotGGRS session"),
-                Err(e) => {
-                    godot_error!("{}", e);
-                }
-            },
-            None => {
-                godot_error!("{}", ERR_MESSAGE_NO_SESSION_MADE)
-            }
         }
     }
 
@@ -84,13 +53,30 @@ impl GodotGGRSP2PSession {
     }
 
     #[export]
-    fn advance_frame(&mut self, _owner: &Node, local_player_handle: usize, local_input: u32) {
-        //Convert local_input into a byte array
-        let local_input_bytes = local_input.to_be_bytes();
-        let local_input_array_slice: &[u8] = &local_input_bytes[..];
-
+    fn start_session(&mut self, _owner: &Node) {
         match &mut self.sess {
-            Some(s) => match s.advance_frame(local_player_handle, local_input_array_slice) {
+            Some(s) => match s.start_session() {
+                Ok(_) => godot_print!("Started GodotGGRS session"),
+                Err(e) => {
+                    godot_error!("{}", e);
+                    panic!()
+                }
+            },
+            None => {
+                godot_error!("No session was made.")
+            }
+        }
+    }
+
+    #[export]
+    fn receive_callback_node(&mut self, _owner: &Node, callback: Ref<Node>) {
+        self.callback_node = Some(callback);
+    }
+
+    #[export]
+    fn advance_frame(&mut self, _owner: &Node) {
+        match &mut self.sess {
+            Some(s) => match s.advance_frame() {
                 Ok(requests) => {
                     self.handle_requests(requests);
                 }
@@ -99,8 +85,49 @@ impl GodotGGRSP2PSession {
                 }
             },
             None => {
-                godot_error!("{}", ERR_MESSAGE_NO_SESSION_MADE);
+                godot_error!("No session was made");
             }
+        }
+    }
+
+    #[export]
+    fn get_frames_behind_host(&mut self, _owner: &Node) -> u32 {
+        match &mut self.sess {
+            Some(s) => return s.frames_behind_host(),
+            None => {
+                godot_error!("No session was made");
+                return 0;
+            }
+        }
+    }
+
+    #[export]
+    fn set_catchup_speed(&mut self, _owner: &Node, desired_catchup_speed: u32) {
+        match &mut self.sess {
+            Some(s) => match s.set_catchup_speed(desired_catchup_speed) {
+                Ok(_) => return,
+                Err(e) => godot_error!("{}", e),
+            },
+            None => godot_error!("No session was made"),
+        }
+    }
+
+    #[export]
+    fn set_max_frames_behind(&mut self, _owner: &Node, desired_value: u32) {
+        match &mut self.sess {
+            Some(s) => match s.set_max_frames_behind(desired_value) {
+                Ok(_) => return,
+                Err(e) => godot_error!("{}", e),
+            },
+            None => godot_error!("No session was made"),
+        }
+    }
+
+    #[export]
+    fn poll_remote_clients(&mut self, _owner: &Node) {
+        match &mut self.sess {
+            Some(s) => s.poll_remote_clients(),
+            None => godot_error!("No session made."),
         }
     }
 
@@ -111,83 +138,20 @@ impl GodotGGRSP2PSession {
                 Ok(_) => return,
                 Err(e) => godot_error!("{}", e),
             },
-            None => godot_error!("{}", ERR_MESSAGE_NO_SESSION_MADE),
+            None => godot_error!("No session made."),
         }
     }
 
     #[export]
-    fn receive_callback_node(&mut self, _owner: &Node, callback: Ref<Node>) {
-        self.callback_node = Some(callback);
-    }
-
-    #[export]
-    fn poll_remote_clients(&mut self, _owner: &Node) {
+    fn print_network_stats(&mut self, _owner: &Node) {
         match &mut self.sess {
-            Some(s) => s.poll_remote_clients(),
-            None => godot_error!("{}", ERR_MESSAGE_NO_SESSION_MADE),
-        }
-    }
-
-    #[export]
-    fn print_network_stats(&mut self, _owner: &Node, handle: PlayerHandle) {
-        match &mut self.sess {
-            Some(s) => match s.network_stats(handle) {
+            Some(s) => match s.network_stats() {
                 Ok(n) => godot_print!("send_queue_len: {0}; ping: {1}; kbps_sent: {2}; local_frames_behind: {3}; remote_frames_behind: {4};", n.send_queue_len, n.ping, n.kbps_sent, n.local_frames_behind, n.remote_frames_behind),
                 Err(e) => godot_error!("{}", e),
             },
-            None => godot_error!("{}", ERR_MESSAGE_NO_SESSION_MADE),
+            None => godot_error!("No session made."),
         }
     }
-
-    #[export]
-    fn set_frame_delay(&mut self, _owner: &Node, frame_delay: u32, player_handle: PlayerHandle) {
-        match &mut self.sess {
-            Some(s) => match s.set_frame_delay(frame_delay, player_handle) {
-                Ok(_) => return,
-                Err(e) => godot_error!("{}", e),
-            },
-            None => godot_error!("{}", ERR_MESSAGE_NO_SESSION_MADE),
-        }
-    }
-
-    #[export]
-    fn set_disconnect_timeout(&mut self, _owner: &Node, secs: u64) {
-        match &mut self.sess {
-            Some(s) => s.set_disconnect_timeout(std::time::Duration::from_secs(secs)),
-            None => godot_error!("{}", ERR_MESSAGE_NO_SESSION_MADE),
-        }
-    }
-
-    #[export]
-    fn set_disconnect_notify_delay(&mut self, _owner: &Node, secs: u64) {
-        match &mut self.sess {
-            Some(s) => s.set_disconnect_notify_delay(std::time::Duration::from_secs(secs)),
-            None => godot_error!("{}", ERR_MESSAGE_NO_SESSION_MADE),
-        }
-    }
-
-    #[export]
-    fn set_sparse_saving(&mut self, _owner: &Node, sparse_saving: bool) {
-        match &mut self.sess {
-            Some(s) => match s.set_sparse_saving(sparse_saving) {
-                Ok(_) => return,
-                Err(e) => godot_error!("{}", e),
-            },
-            None => godot_error!("{}", ERR_MESSAGE_NO_SESSION_MADE),
-        }
-    }
-
-    #[export]
-    fn disconnect_player(&mut self, _owner: &Node, player_handle: PlayerHandle) {
-        match &mut self.sess {
-            Some(s) => match s.disconnect_player(player_handle) {
-                Ok(_) => return,
-                Err(e) => godot_error!("{}", e),
-            },
-            None => godot_error!("{}", ERR_MESSAGE_NO_SESSION_MADE),
-        }
-    }
-
     //NON-EXPORTED FUNCTIONS
     fn handle_requests(&mut self, requests: Vec<GGRSRequest>) {
         for item in requests {
@@ -201,6 +165,7 @@ impl GodotGGRSP2PSession {
         }
     }
 
+    ////GGRSRequest handlers
     fn ggrs_request_advance_fame(&self, inputs: Vec<ggrs::GameInput>) {
         //Parse parameter inputs in a way that godot can handle then call the callback method
         match self.callback_node {
@@ -223,7 +188,7 @@ impl GodotGGRSP2PSession {
                 unsafe { node.call("ggrs_advance_frame", &[godot_array.to_variant()]) };
             }
             None => {
-                godot_error!("{}", ERR_MESSAGE_NO_CALLBACK_NODE);
+                godot_error!("No callback node was specified.");
             }
         }
     }
@@ -241,7 +206,7 @@ impl GodotGGRSP2PSession {
                 unsafe { node.call("ggrs_load_game_state", &[frame, buffer, checksum]) };
             }
             None => {
-                godot_error!("{}", ERR_MESSAGE_NO_CALLBACK_NODE);
+                godot_error!("No callback node was specified.");
             }
         }
     }
@@ -262,27 +227,8 @@ impl GodotGGRSP2PSession {
                 cell.save(result);
             }
             None => {
-                godot_error!("{}", ERR_MESSAGE_NO_CALLBACK_NODE);
+                godot_error!("No callback node was specified.");
             }
         }
-    }
-
-    fn add_player(&mut self, player_type: PlayerType) -> usize {
-        match &mut self.sess {
-            Some(s) => match s.add_player(player_type, self.next_handle) {
-                Ok(o) => {
-                    self.next_handle += 1;
-                    return o;
-                }
-                Err(e) => {
-                    godot_error!("{}", e);
-                    panic!()
-                }
-            },
-            None => {
-                godot_error!("{}", ERR_MESSAGE_NO_SESSION_MADE);
-                panic!()
-            }
-        };
     }
 }
