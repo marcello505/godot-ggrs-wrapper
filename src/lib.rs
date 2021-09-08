@@ -5,6 +5,12 @@ mod godotggrs_p2pspectatorsession;
 mod godotggrs_synctest;
 mod helper_functions;
 
+pub const ERR_MESSAGE_NO_SESSION_MADE: &str = "No session was made.";
+pub const ERR_MESSAGE_NO_CALLBACK_NODE: &str = "No callback node was specified.";
+pub const CALLBACK_FUNC_SAVE_GAME_STATE: &str = "ggrs_save_game_state";
+pub const CALLBACK_FUNC_LOAD_GAME_STATE: &str = "ggrs_load_game_state";
+pub const CALLBACK_FUNC_ADVANCE_FRAME: &str = "ggrs_advance_frame";
+
 pub fn init_panic_hook() {
     // To enable backtrace, you will need the `backtrace` crate to be included in your cargo.toml, or
     // a version of rust where backtrace is included in the standard library (e.g. Rust nightly as of the date of publishing)
