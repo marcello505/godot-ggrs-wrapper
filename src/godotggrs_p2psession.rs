@@ -185,6 +185,27 @@ impl GodotGGRSP2PSession {
         }
     }
 
+    #[export]
+    fn get_events(&mut self, _owner: &Node)->Vec<(&str, Variant)>{
+        let mut result: Vec<(&str, Variant)> = Vec::new();
+        match &mut self.sess{
+            Some(s) => {
+                for event in s.events(){
+                    match event {
+                        GGRSEvent::WaitRecommendation { skip_frames } => result.push(("WaitRecommendation", skip_frames.to_variant())),
+                        GGRSEvent::NetworkInterrupted { player_handle, disconnect_timeout} => result.push(("NetworkInterrupted", (player_handle, disconnect_timeout as u64).to_variant())),
+                        GGRSEvent::NetworkResumed { player_handle } => result.push(("NetworkResumed", player_handle.to_variant())),
+                        GGRSEvent::Disconnected { player_handle } => result.push(("Disconnected", player_handle.to_variant())),
+                        GGRSEvent::Synchronized { player_handle } => result.push(("Synchronized", player_handle.to_variant())),
+                        GGRSEvent::Synchronizing { player_handle, total, count} => result.push(("Synchronizing", (player_handle, total, count).to_variant())),
+                    }
+                }
+            },
+            None => godot_error!("{}", ERR_MESSAGE_NO_SESSION_MADE)
+        };
+        return result
+    }
+
     //NON-EXPORTED FUNCTIONS
     fn handle_requests(&mut self, requests: Vec<GGRSRequest>) {
         for item in requests {
