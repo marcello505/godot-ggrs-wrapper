@@ -4,7 +4,7 @@ The purpose of this repo is to create a wrapper for the [ggrs](https://github.co
 
 ## Notes
 
-- It's recommended that you set `reloadable` to false inside the `GDNativeLibrary` Godot resource.
+- It's recommended that you set `reloadable` to `false` inside the `GDNativeLibrary` Godot resource.
 - Tested on Godot version 3.3.2, Godot 4.0 will have vastly expanded GDNative capabilities so when that comes out it can be assumed that this project will break.
 - Inputs to GodotGGRS is currently in the format of a unsigned 32-bit integer.
 - States are GodotByteArrays, you convert the godot variant to a ByteArray and give it to GodotGGRS.
