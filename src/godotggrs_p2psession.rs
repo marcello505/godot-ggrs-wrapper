@@ -1,6 +1,5 @@
-use crate::helper_functions::*;
+use crate::*;
 use gdnative::core_types::ToVariant;
-use gdnative::prelude::*;
 use ggrs::*;
 use std::convert::TryInto;
 use std::option::*;
@@ -186,6 +185,27 @@ impl GodotGGRSP2PSession {
         }
     }
 
+    #[export]
+    fn get_events(&mut self, _owner: &Node)->Vec<(&str, Variant)>{
+        let mut result: Vec<(&str, Variant)> = Vec::new();
+        match &mut self.sess{
+            Some(s) => {
+                for event in s.events(){
+                    match event {
+                        GGRSEvent::WaitRecommendation { skip_frames } => result.push(("WaitRecommendation", skip_frames.to_variant())),
+                        GGRSEvent::NetworkInterrupted { player_handle, disconnect_timeout} => result.push(("NetworkInterrupted", (player_handle, disconnect_timeout as u64).to_variant())),
+                        GGRSEvent::NetworkResumed { player_handle } => result.push(("NetworkResumed", player_handle.to_variant())),
+                        GGRSEvent::Disconnected { player_handle } => result.push(("Disconnected", player_handle.to_variant())),
+                        GGRSEvent::Synchronized { player_handle } => result.push(("Synchronized", player_handle.to_variant())),
+                        GGRSEvent::Synchronizing { player_handle, total, count} => result.push(("Synchronizing", (player_handle, total, count).to_variant())),
+                    }
+                }
+            },
+            None => godot_error!("{}", ERR_MESSAGE_NO_SESSION_MADE)
+        };
+        return result
+    }
+
     //NON-EXPORTED FUNCTIONS
     fn handle_requests(&mut self, requests: Vec<GGRSRequest>) {
         for item in requests {
@@ -218,7 +238,7 @@ impl GodotGGRSP2PSession {
                         .to_variant();
                     godot_array.push(result);
                 }
-                unsafe { node.call("ggrs_advance_frame", &[godot_array.to_variant()]) };
+                unsafe { node.call(CALLBACK_FUNC_ADVANCE_FRAME, &[godot_array.to_variant()]) };
             }
             None => {
                 godot_error!("{}", ERR_MESSAGE_NO_CALLBACK_NODE);
@@ -236,7 +256,7 @@ impl GodotGGRSP2PSession {
                 let buffer =
                     ByteArray::from_vec(game_state.buffer.unwrap_or_default()).to_variant();
                 let checksum = game_state.checksum.to_variant();
-                unsafe { node.call("ggrs_load_game_state", &[frame, buffer, checksum]) };
+                unsafe { node.call(CALLBACK_FUNC_LOAD_GAME_STATE, &[frame, buffer, checksum]) };
             }
             None => {
                 godot_error!("{}", ERR_MESSAGE_NO_CALLBACK_NODE);
@@ -250,7 +270,7 @@ impl GodotGGRSP2PSession {
             Some(s) => {
                 let node = unsafe { s.assume_safe() };
                 let state: Variant =
-                    unsafe { node.call("ggrs_save_game_state", &[frame.to_variant()]) };
+                    unsafe { node.call(CALLBACK_FUNC_SAVE_GAME_STATE, &[frame.to_variant()]) };
                 let state_bytes = ByteArray::from_variant(&state).unwrap_or_default();
                 let mut state_bytes_vec = Vec::new();
                 for i in 0..state_bytes.len() {

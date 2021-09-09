@@ -1,5 +1,4 @@
-use crate::helper_functions::*;
-use gdnative::prelude::*;
+use crate::*;
 use ggrs::*;
 use std::convert::TryInto;
 
@@ -104,7 +103,7 @@ impl GodotGGRSSyncTest {
                         .to_variant();
                     godot_array.push(result);
                 }
-                unsafe { node.call("ggrs_advance_frame", &[godot_array.to_variant()]) };
+                unsafe { node.call(CALLBACK_FUNC_ADVANCE_FRAME, &[godot_array.to_variant()]) };
             }
             None => {
                 godot_error!("{}", ERR_MESSAGE_NO_CALLBACK_NODE);
@@ -122,7 +121,7 @@ impl GodotGGRSSyncTest {
                 let buffer =
                     ByteArray::from_vec(game_state.buffer.unwrap_or_default()).to_variant();
                 let checksum = game_state.checksum.to_variant();
-                unsafe { node.call("ggrs_load_game_state", &[frame, buffer, checksum]) };
+                unsafe { node.call(CALLBACK_FUNC_LOAD_GAME_STATE, &[frame, buffer, checksum]) };
             }
             None => {
                 godot_error!("{}", ERR_MESSAGE_NO_CALLBACK_NODE);
@@ -136,7 +135,7 @@ impl GodotGGRSSyncTest {
             Some(s) => {
                 let node = unsafe { s.assume_safe() };
                 let state: Variant =
-                    unsafe { node.call("ggrs_save_game_state", &[frame.to_variant()]) };
+                    unsafe { node.call(CALLBACK_FUNC_SAVE_GAME_STATE, &[frame.to_variant()]) };
                 let state_bytes = ByteArray::from_variant(&state).unwrap_or_default();
                 let mut state_bytes_vec = Vec::new();
                 for i in 0..state_bytes.len() {
