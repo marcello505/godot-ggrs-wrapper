@@ -4,6 +4,10 @@ In this document, all remarkable changes are listed. Not mentioned are smaller c
 
 ## Unreleased
 
+## 0.3.1
+
+- Updated GGRS to v0.5.0
+
 ## 0.3.0
 
 - Added `get_events()` function to `GodotGGRSP2PSpectatorSession` which calls `events()` on the GGRS Session
