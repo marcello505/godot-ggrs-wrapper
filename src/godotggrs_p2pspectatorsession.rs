@@ -37,7 +37,7 @@ impl GodotGGRSP2PSpectatorSession {
     ) {
         let input_size: usize = std::mem::size_of::<u32>();
         let host_addr_object: std::net::SocketAddr = host_addr.parse().unwrap();
-        match start_p2p_spectator_session(num_players, input_size, local_port, host_addr_object) {
+        match P2PSpectatorSession::new(num_players, input_size, local_port, host_addr_object) {
             Ok(s) => self.sess = Some(s),
             Err(e) => godot_error!("{}", e),
         }
@@ -153,24 +153,43 @@ impl GodotGGRSP2PSpectatorSession {
     }
 
     #[export]
-    fn get_events(&mut self, _owner: &Node)->Vec<(&str, Variant)>{
+    fn get_events(&mut self, _owner: &Node) -> Vec<(&str, Variant)> {
         let mut result: Vec<(&str, Variant)> = Vec::new();
-        match &mut self.sess{
+        match &mut self.sess {
             Some(s) => {
-                for event in s.events(){
+                for event in s.events() {
                     match event {
-                        GGRSEvent::WaitRecommendation { skip_frames } => result.push(("WaitRecommendation", skip_frames.to_variant())),
-                        GGRSEvent::NetworkInterrupted { player_handle, disconnect_timeout} => result.push(("NetworkInterrupted", (player_handle, disconnect_timeout as u64).to_variant())),
-                        GGRSEvent::NetworkResumed { player_handle } => result.push(("NetworkResumed", player_handle.to_variant())),
-                        GGRSEvent::Disconnected { player_handle } => result.push(("Disconnected", player_handle.to_variant())),
-                        GGRSEvent::Synchronized { player_handle } => result.push(("Synchronized", player_handle.to_variant())),
-                        GGRSEvent::Synchronizing { player_handle, total, count} => result.push(("Synchronizing", (player_handle, total, count).to_variant())),
+                        GGRSEvent::WaitRecommendation { skip_frames } => {
+                            result.push(("WaitRecommendation", skip_frames.to_variant()))
+                        }
+                        GGRSEvent::NetworkInterrupted {
+                            player_handle,
+                            disconnect_timeout,
+                        } => result.push((
+                            "NetworkInterrupted",
+                            (player_handle, disconnect_timeout as u64).to_variant(),
+                        )),
+                        GGRSEvent::NetworkResumed { player_handle } => {
+                            result.push(("NetworkResumed", player_handle.to_variant()))
+                        }
+                        GGRSEvent::Disconnected { player_handle } => {
+                            result.push(("Disconnected", player_handle.to_variant()))
+                        }
+                        GGRSEvent::Synchronized { player_handle } => {
+                            result.push(("Synchronized", player_handle.to_variant()))
+                        }
+                        GGRSEvent::Synchronizing {
+                            player_handle,
+                            total,
+                            count,
+                        } => result
+                            .push(("Synchronizing", (player_handle, total, count).to_variant())),
                     }
                 }
-            },
-            None => godot_error!("{}", ERR_MESSAGE_NO_SESSION_MADE)
+            }
+            None => godot_error!("{}", ERR_MESSAGE_NO_SESSION_MADE),
         };
-        return result
+        return result;
     }
 
     //NON-EXPORTED FUNCTIONS

@@ -29,7 +29,7 @@ impl GodotGGRSSyncTest {
     #[export]
     fn create_session(&mut self, _owner: &Node, num_players: u32, check_distance: u32) {
         let input_size: usize = std::mem::size_of::<u32>();
-        match start_synctest_session(num_players, input_size, check_distance) {
+        match SyncTestSession::new(num_players, input_size, check_distance) {
             Ok(s) => self.sess = Some(s),
             Err(e) => godot_error!("{}", e),
         }
