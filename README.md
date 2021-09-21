@@ -10,6 +10,10 @@ The purpose of this repo is to create a wrapper for the [ggrs](https://github.co
 - States are GodotByteArrays, you convert the godot variant to a ByteArray and give it to GodotGGRS.
 - Compiling requires Clang, see details [here](https://rust-lang.github.io/rust-bindgen/requirements.html).
 
+## Examples
+
+- [Remote connection between 2 different machines](https://youtu.be/8gwXVMqhNs8)
+
 ## Quick start
 
 Since this project uses [godot-rust](https://github.com/godot-rust/godot-rust) GDNative bindings you should be familiar with how to set up a godot-rust GDNative node inside Godot. If you aren't please check out [this page](https://godot-rust.github.io/book/getting-started/hello-world.html) for details. The setup you want to have is a scene with a node that has the GodotGGRSP2PSession class bound to it.
