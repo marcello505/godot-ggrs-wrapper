@@ -4,6 +4,7 @@ use ggrs::*;
 use std::convert::TryInto;
 use std::option::*;
 
+/// A Godot implementation of [`P2PSession`]
 #[derive(NativeClass)]
 #[inherit(Node)]
 pub struct GodotGGRSP2PSession {
