@@ -52,6 +52,21 @@ impl GodotGGRSP2PSpectatorSession {
     }
 
     #[export]
+    fn get_current_state(&mut self, _owner: &Node) -> String {
+        match &mut self.sess {
+            Some(s) => match s.current_state() {
+                SessionState::Initializing => "Initializing".to_owned(),
+                SessionState::Running => "Running".to_owned(),
+                SessionState::Synchronizing => "Synchronizing".to_owned(),
+            },
+            None => {
+                godot_error!("{}", ERR_MESSAGE_NO_SESSION_MADE);
+                "".to_owned()
+            }
+        }
+    }
+
+    #[export]
     fn start_session(&mut self, _owner: &Node) {
         match &mut self.sess {
             Some(s) => match s.start_session() {
