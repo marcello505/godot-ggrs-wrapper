@@ -1,8 +1,11 @@
+//! # Godot-GGRS-Wrapper
+//! Godot-GGRS-Wrapper exposes different function to interact with GGRS inside Godot.
+
 use gdnative::prelude::*;
 
-mod godotggrs_p2psession;
-mod godotggrs_p2pspectatorsession;
-mod godotggrs_synctest;
+pub(crate) mod godotggrs_p2psession;
+pub(crate) mod godotggrs_p2pspectatorsession;
+pub(crate) mod godotggrs_synctest;
 mod helper_functions;
 
 pub const ERR_MESSAGE_NO_SESSION_MADE: &str = "No session was made.";

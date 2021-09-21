@@ -30,8 +30,9 @@ impl GodotGGRSP2PSession {
         godot_print!("GodotGGRSP2PSession _ready() called.");
     }
 
+    /// Creates a GGRSP2PSession
     #[export]
-    fn create_session(&mut self, _owner: &Node, local_port: u16, num_players: u32) {
+    pub fn create_session(&mut self, _owner: &Node, local_port: u16, num_players: u32) {
         let input_size: usize = std::mem::size_of::<u32>();
         match P2PSession::new(num_players, input_size, local_port) {
             Ok(s) => self.sess = Some(s),
