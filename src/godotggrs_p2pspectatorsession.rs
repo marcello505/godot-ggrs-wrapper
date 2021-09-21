@@ -168,6 +168,30 @@ impl GodotGGRSP2PSpectatorSession {
     }
 
     #[export]
+    fn get_network_stats(&mut self, _owner: &Node) -> (usize, u64, usize, i32, i32) {
+        const DEFAULT_RESPONSE: (usize, u64, usize, i32, i32) = (0, 0, 0, 0, 0);
+        match &mut self.sess {
+            Some(s) => match s.network_stats() {
+                Ok(n) => (
+                    n.send_queue_len,
+                    n.ping as u64,
+                    n.kbps_sent,
+                    n.local_frames_behind,
+                    n.remote_frames_behind,
+                ),
+                Err(e) => {
+                    godot_error!("{}", e);
+                    DEFAULT_RESPONSE
+                }
+            },
+            None => {
+                godot_error!("{}", ERR_MESSAGE_NO_SESSION_MADE);
+                DEFAULT_RESPONSE
+            }
+        }
+    }
+
+    #[export]
     fn get_events(&mut self, _owner: &Node) -> Vec<(&str, Variant)> {
         let mut result: Vec<(&str, Variant)> = Vec::new();
         match &mut self.sess {
