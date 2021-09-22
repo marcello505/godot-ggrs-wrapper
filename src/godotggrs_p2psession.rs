@@ -49,16 +49,21 @@ impl GodotGGRSP2PSession {
     /// # Errors
     /// - Will print an [ERR_MESSAGE_NO_SESSION_MADE] error if a session has not been made
     #[export]
-    pub fn add_local_player(&mut self, _owner: &Node) -> usize {
+    pub fn add_local_player(&mut self, _owner: &Node) -> PlayerHandle {
         self.add_player(PlayerType::Local)
     }
 
     /// Adds a remote player to the a session and returns the handle
+    /// # Example
+    /// The following example shows how to format an address string, starting with the IP and ending with the port.
+    /// ```
+    /// p2p.add_remote_player("127.0.0.1:7070")
+    /// ```
     /// # Errors
     /// - Will print an [ERR_MESSAGE_NO_SESSION_MADE] error if a session has not been made
     /// - Will panic if the address string could not be converted to an [std::net::SocketAddr]
     #[export]
-    pub fn add_remote_player(&mut self, _owner: &Node, address: String) -> usize {
+    pub fn add_remote_player(&mut self, _owner: &Node, address: String) -> PlayerHandle {
         let remote_addr: std::net::SocketAddr = address.parse().unwrap();
         self.add_player(PlayerType::Remote(remote_addr))
     }
@@ -68,7 +73,7 @@ impl GodotGGRSP2PSession {
     /// - Will print an [ERR_MESSAGE_NO_SESSION_MADE] error if a session has not been made
     /// - Will panic if the address string could not be converted to an [std::net::SocketAddr]
     #[export]
-    pub fn add_spectator(&mut self, _owner: &Node, address: String) -> usize {
+    pub fn add_spectator(&mut self, _owner: &Node, address: String) -> PlayerHandle {
         let remote_addr: std::net::SocketAddr = address.parse().unwrap();
         self.add_player(PlayerType::Spectator(remote_addr))
     }
@@ -100,6 +105,7 @@ impl GodotGGRSP2PSession {
         }
     }
 
+    /// Returns the current sate of the session as a String.
     #[export]
     pub fn get_current_state(&mut self, _owner: &Node) -> String {
         match &mut self.sess {
@@ -120,6 +126,8 @@ impl GodotGGRSP2PSession {
     /// - [CALLBACK_FUNC_SAVE_GAME_STATE]
     /// - [CALLBACK_FUNC_LOAD_GAME_STATE]
     /// - [CALLBACK_FUNC_SAVE_GAME_STATE]
+    /// # Errors
+    /// - Will print an [ERR_MESSAGE_NO_SESSION_MADE] error if a session has not been made
     #[export]
     pub fn advance_frame(&mut self, _owner: &Node, local_player_handle: usize, local_input: u32) {
         //Convert local_input into a byte array
@@ -141,6 +149,9 @@ impl GodotGGRSP2PSession {
         }
     }
 
+    /// Sets [P2PSession::set_fps()]
+    /// # Errors
+    /// - Will print an [ERR_MESSAGE_NO_SESSION_MADE] error if a session has not been made
     #[export]
     pub fn set_fps(&mut self, _owner: &Node, fps: u32) {
         match &mut self.sess {
@@ -152,11 +163,15 @@ impl GodotGGRSP2PSession {
         }
     }
 
+    /// Sets the callback node that will be called when using [Self::advance_frame()]
     #[export]
     pub fn set_callback_node(&mut self, _owner: &Node, callback: Ref<Node>) {
         self.callback_node = Some(callback);
     }
 
+    /// Calls [P2PSession::poll_remote_clients()]
+    /// # Errors
+    /// - Will print an [ERR_MESSAGE_NO_SESSION_MADE] error if a session has not been made
     #[export]
     pub fn poll_remote_clients(&mut self, _owner: &Node) {
         match &mut self.sess {
@@ -165,6 +180,9 @@ impl GodotGGRSP2PSession {
         }
     }
 
+    /// Prints out network stats of specified handle
+    /// # Errors
+    /// - Will print an [ERR_MESSAGE_NO_SESSION_MADE] error if a session has not been made
     #[export]
     pub fn print_network_stats(&mut self, _owner: &Node, handle: PlayerHandle) {
         match &mut self.sess {
@@ -176,6 +194,9 @@ impl GodotGGRSP2PSession {
         }
     }
 
+    /// Will return network stats of specified handle as a `tuple`, which will be converted to an `Array` inside godot.
+    /// # Errors
+    /// - Will print an [ERR_MESSAGE_NO_SESSION_MADE] error if a session has not been made
     #[export]
     pub fn get_network_stats(
         &mut self,
@@ -204,6 +225,9 @@ impl GodotGGRSP2PSession {
         }
     }
 
+    /// Sets [P2PSession::set_frame_delay()] of specified handle.
+    /// # Errors
+    /// - Will print an [ERR_MESSAGE_NO_SESSION_MADE] error if a session has not been made
     #[export]
     pub fn set_frame_delay(
         &mut self,
@@ -220,6 +244,9 @@ impl GodotGGRSP2PSession {
         }
     }
 
+    /// Sets [P2PSession::set_disconnect_timeout()] converting the u64 to secconds.
+    /// # Errors
+    /// - Will print an [ERR_MESSAGE_NO_SESSION_MADE] error if a session has not been made
     #[export]
     pub fn set_disconnect_timeout(&mut self, _owner: &Node, secs: u64) {
         match &mut self.sess {
@@ -228,6 +255,9 @@ impl GodotGGRSP2PSession {
         }
     }
 
+    /// Sets [P2PSession::set_disconnect_notify_delay()] converting the u64 to secconds.
+    /// # Errors
+    /// - Will print an [ERR_MESSAGE_NO_SESSION_MADE] error if a session has not been made
     #[export]
     pub fn set_disconnect_notify_delay(&mut self, _owner: &Node, secs: u64) {
         match &mut self.sess {
@@ -236,6 +266,9 @@ impl GodotGGRSP2PSession {
         }
     }
 
+    /// Sets [P2PSession::set_sparse_saving()].
+    /// # Errors
+    /// - Will print an [ERR_MESSAGE_NO_SESSION_MADE] error if a session has not been made
     #[export]
     pub fn set_sparse_saving(&mut self, _owner: &Node, sparse_saving: bool) {
         match &mut self.sess {
@@ -247,6 +280,9 @@ impl GodotGGRSP2PSession {
         }
     }
 
+    /// Disconnects specified player handle.
+    /// # Errors
+    /// - Will print an [ERR_MESSAGE_NO_SESSION_MADE] error if a session has not been made
     #[export]
     pub fn disconnect_player(&mut self, _owner: &Node, player_handle: PlayerHandle) {
         match &mut self.sess {
@@ -258,6 +294,31 @@ impl GodotGGRSP2PSession {
         }
     }
 
+    /// Returns an `Array` of events which contain usefull information, while you don't have to implement everything, the one thing you should implement is the WaitRecommendation.
+    /// For details regarding the events please take a loot at [GGRSEvent].
+    /// # Example
+    /// ```gdscript
+    /// var events = ggrs.get_events()
+    ///	for item in events:
+    ///     match item[0]:
+    ///         "WaitRecommendation":
+    ///             frames_to_skip += item[1]
+    ///         "NetworkInterrupted":
+    ///             var handle = item[1][0]
+    ///             var disconnect_timeout = item[1][1]
+    ///         "NetworkResumed":
+    ///             var handle = item[1]
+    ///         "Disconnected":
+    ///             var handle = item[1]
+    ///         "Synchronized":
+    ///             var handle = item[1]
+    ///         "Synchronizing":
+    ///             var handle = item[1][0]
+    ///             var total = item[1][1]
+    ///             var count = item[1][2]
+    /// ```
+    /// # Errors
+    /// - Will print an [ERR_MESSAGE_NO_SESSION_MADE] error if a session has not been made
     #[export]
     pub fn get_events(&mut self, _owner: &Node) -> Vec<(&str, Variant)> {
         let mut result: Vec<(&str, Variant)> = Vec::new();
@@ -377,7 +438,7 @@ impl GodotGGRSP2PSession {
         }
     }
 
-    fn add_player(&mut self, player_type: PlayerType) -> usize {
+    fn add_player(&mut self, player_type: PlayerType) -> PlayerHandle {
         match &mut self.sess {
             Some(s) => match s.add_player(player_type, self.next_handle) {
                 Ok(o) => {

@@ -1,5 +1,9 @@
+#![warn(missing_docs)]
 //! # Godot-GGRS-Wrapper
 //! Godot-GGRS-Wrapper exposes different function to interact with GGRS inside Godot.
+//! All documentation written is explicitly targeted towards use inside Godot, any functions that are usable in Godot have parameters that start with `(&mut self, _owner: &Node)`.
+//! When interacting with the function in Godot you can ignore these 2 parameters and just use what comes after.
+//! For example the [GodotGGRSP2PSession::add_remote_player()] method would just be used like this in Godot: `p2p.add_remote_player("127.0.0.1:7070")`.
 
 use gdnative::prelude::*;
 pub use godotggrs_p2psession::GodotGGRSP2PSession;
