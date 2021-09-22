@@ -1,6 +1,6 @@
 #![warn(missing_docs)]
 //! # Godot-GGRS-Wrapper
-//! Godot-GGRS-Wrapper exposes different function to interact with GGRS inside Godot.
+//! Godot-GGRS-Wrapper exposes different functions to interact with GGRS inside Godot.
 //! All documentation written is explicitly targeted towards use inside Godot, any functions that are usable in Godot have parameters that start with `(&mut self, _owner: &Node)`.
 //! When interacting with the function in Godot you can ignore these 2 parameters and just use what comes after.
 //! For example the [GodotGGRSP2PSession::add_remote_player()] method would just be used like this in Godot: `p2p.add_remote_player("127.0.0.1:7070")`.
@@ -18,11 +18,11 @@ mod godotggrs_synctest;
 pub const ERR_MESSAGE_NO_SESSION_MADE: &str = "No session was made.";
 /// Error message that is printed when there's no callback node specified.
 pub const ERR_MESSAGE_NO_CALLBACK_NODE: &str = "No callback node was specified.";
-/// The name of the godot callback function that gets called when requesting a state save.
+/// The name of the Godot callback function that gets called when requesting a state save.
 pub const CALLBACK_FUNC_SAVE_GAME_STATE: &str = "ggrs_save_game_state";
-/// The name of the godot callback function that gets called when requesting a state load.
+/// The name of the Godot callback function that gets called when requesting a state load.
 pub const CALLBACK_FUNC_LOAD_GAME_STATE: &str = "ggrs_load_game_state";
-/// The name of the godot callback function that gets called when requesting to advance the frame.
+/// The name of the Godot callback function that gets called when requesting to advance the frame.
 pub const CALLBACK_FUNC_ADVANCE_FRAME: &str = "ggrs_advance_frame";
 
 /// Routes all Rust panics to Godot so that any uncaught errors are still visible in Godot.
