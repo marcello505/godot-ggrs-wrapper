@@ -1,7 +1,8 @@
 use crate::*;
-use ggrs::*;
+use ggrs::{Frame, GGRSRequest, GameState, GameStateCell, PlayerHandle, SyncTestSession};
 use std::convert::TryInto;
 
+/// A Godot implementation of [`SyncTestSession`]
 #[derive(NativeClass)]
 #[inherit(Node)]
 pub struct GodotGGRSSyncTest {
@@ -26,8 +27,10 @@ impl GodotGGRSSyncTest {
         godot_print!("GodotGGRSSyncTest _ready() called.");
     }
 
+    /// Creates a [SyncTestSession],
+    /// call this when you want to start setting up a `SyncTestSession` takes the total number of players and the check distance as parameters
     #[export]
-    fn create_session(&mut self, _owner: &Node, num_players: u32, check_distance: u32) {
+    pub fn create_session(&mut self, _owner: &Node, num_players: u32, check_distance: u32) {
         let input_size: usize = std::mem::size_of::<u32>();
         match SyncTestSession::new(num_players, input_size, check_distance) {
             Ok(s) => self.sess = Some(s),
@@ -35,8 +38,16 @@ impl GodotGGRSSyncTest {
         }
     }
 
+    /// Sets [SyncTestSession::set_frame_delay()] of specified handle.
+    /// # Errors
+    /// - Will print an [ERR_MESSAGE_NO_SESSION_MADE] error if a session has not been made
     #[export]
-    fn set_frame_delay(&mut self, _owner: &Node, frame_delay: u32, player_handle: PlayerHandle) {
+    pub fn set_frame_delay(
+        &mut self,
+        _owner: &Node,
+        frame_delay: u32,
+        player_handle: PlayerHandle,
+    ) {
         match &mut self.sess {
             Some(s) => match s.set_frame_delay(frame_delay, player_handle) {
                 Ok(_) => return,
@@ -46,8 +57,16 @@ impl GodotGGRSSyncTest {
         }
     }
 
+    /// This function will advance the frame using an array of all the inputs given as a parameter (inputs are currently an int in Godot).
+    /// Before using this function you have to set the callback node and make sure it has the following callback functions implemented
+    /// - [CALLBACK_FUNC_SAVE_GAME_STATE]
+    /// - [CALLBACK_FUNC_LOAD_GAME_STATE]
+    /// - [CALLBACK_FUNC_SAVE_GAME_STATE]
+    /// # Errors
+    /// - Will print an [ERR_MESSAGE_NO_SESSION_MADE] error if a session has not been made
+    /// - Will print an [ERR_MESSAGE_NO_CALLBACK_NODE] error if a callback node has not been set
     #[export]
-    fn advance_frame(&mut self, _owner: &Node, all_inputs: Vec<u32>) {
+    pub fn advance_frame(&mut self, _owner: &Node, all_inputs: Vec<u32>) {
         let mut all_inputs_bytes = Vec::new();
         for i in all_inputs {
             all_inputs_bytes.push(Vec::from(i.to_be_bytes()));
@@ -66,8 +85,9 @@ impl GodotGGRSSyncTest {
         }
     }
 
+    /// Sets the callback node that will be called when using [Self::advance_frame()]
     #[export]
-    fn set_callback_node(&mut self, _owner: &Node, callback: Ref<Node>) {
+    pub fn set_callback_node(&mut self, _owner: &Node, callback: Ref<Node>) {
         self.callback_node = Some(callback);
     }
 
