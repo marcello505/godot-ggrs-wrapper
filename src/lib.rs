@@ -13,7 +13,6 @@ pub use godotggrs_synctest::GodotGGRSSyncTest;
 mod godotggrs_p2psession;
 mod godotggrs_p2pspectatorsession;
 mod godotggrs_synctest;
-mod helper_functions;
 
 /// Error message that is printed when there's no GGRS session made.
 pub const ERR_MESSAGE_NO_SESSION_MADE: &str = "No session was made.";
