@@ -15,12 +15,18 @@ mod godotggrs_p2pspectatorsession;
 mod godotggrs_synctest;
 mod helper_functions;
 
+/// Error message that is printed when there's no GGRS session made.
 pub const ERR_MESSAGE_NO_SESSION_MADE: &str = "No session was made.";
+/// Error message that is printed when there's no callback node specified.
 pub const ERR_MESSAGE_NO_CALLBACK_NODE: &str = "No callback node was specified.";
+/// The name of the godot callback function that gets called when requesting a state save.
 pub const CALLBACK_FUNC_SAVE_GAME_STATE: &str = "ggrs_save_game_state";
+/// The name of the godot callback function that gets called when requesting a state load.
 pub const CALLBACK_FUNC_LOAD_GAME_STATE: &str = "ggrs_load_game_state";
+/// The name of the godot callback function that gets called when requesting to advance the frame.
 pub const CALLBACK_FUNC_ADVANCE_FRAME: &str = "ggrs_advance_frame";
 
+/// Routes all Rust panics to Godot so that any uncaught errors are still visible in Godot.
 pub fn init_panic_hook() {
     // To enable backtrace, you will need the `backtrace` crate to be included in your cargo.toml, or
     // a version of rust where backtrace is included in the standard library (e.g. Rust nightly as of the date of publishing)
