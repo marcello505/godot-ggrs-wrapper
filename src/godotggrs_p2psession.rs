@@ -105,7 +105,7 @@ impl GodotGGRSP2PSession {
         }
     }
 
-    /// Returns the current sate of the session as a String.
+    /// Returns the current sate of the session as a String. Take a look at [SessionState] for all possible states.
     #[export]
     pub fn get_current_state(&mut self, _owner: &Node) -> String {
         match &mut self.sess {
@@ -128,6 +128,7 @@ impl GodotGGRSP2PSession {
     /// - [CALLBACK_FUNC_SAVE_GAME_STATE]
     /// # Errors
     /// - Will print an [ERR_MESSAGE_NO_SESSION_MADE] error if a session has not been made
+    /// - Will print an [ERR_MESSAGE_NO_CALLBACK_NODE] error if a callback node has not been set
     #[export]
     pub fn advance_frame(&mut self, _owner: &Node, local_player_handle: usize, local_input: u32) {
         //Convert local_input into a byte array
