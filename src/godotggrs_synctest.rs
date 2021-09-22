@@ -67,7 +67,7 @@ impl GodotGGRSSyncTest {
     }
 
     #[export]
-    fn receive_callback_node(&mut self, _owner: &Node, callback: Ref<Node>) {
+    fn set_callback_node(&mut self, _owner: &Node, callback: Ref<Node>) {
         self.callback_node = Some(callback);
     }
 

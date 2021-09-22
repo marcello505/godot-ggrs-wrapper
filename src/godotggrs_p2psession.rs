@@ -153,7 +153,7 @@ impl GodotGGRSP2PSession {
     }
 
     #[export]
-    pub fn receive_callback_node(&mut self, _owner: &Node, callback: Ref<Node>) {
+    pub fn set_callback_node(&mut self, _owner: &Node, callback: Ref<Node>) {
         self.callback_node = Some(callback);
     }
 
