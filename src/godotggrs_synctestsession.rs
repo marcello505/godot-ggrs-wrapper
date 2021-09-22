@@ -5,14 +5,14 @@ use std::convert::TryInto;
 /// A Godot implementation of [`SyncTestSession`]
 #[derive(NativeClass)]
 #[inherit(Node)]
-pub struct GodotGGRSSyncTest {
+pub struct GodotGGRSSyncTestSession {
     sess: Option<SyncTestSession>,
     callback_node: Option<Ref<Node>>,
 }
 
-impl GodotGGRSSyncTest {
+impl GodotGGRSSyncTestSession {
     fn new(_owner: &Node) -> Self {
-        GodotGGRSSyncTest {
+        GodotGGRSSyncTestSession {
             sess: None,
             callback_node: None,
         }
@@ -20,7 +20,7 @@ impl GodotGGRSSyncTest {
 }
 
 #[methods]
-impl GodotGGRSSyncTest {
+impl GodotGGRSSyncTestSession {
     //EXPORTED FUNCTIONS
     #[export]
     fn _ready(&self, _owner: &Node) {

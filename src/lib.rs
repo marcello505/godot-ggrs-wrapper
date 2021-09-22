@@ -8,11 +8,11 @@
 use gdnative::prelude::*;
 pub use godotggrs_p2psession::GodotGGRSP2PSession;
 pub use godotggrs_p2pspectatorsession::GodotGGRSP2PSpectatorSession;
-pub use godotggrs_synctest::GodotGGRSSyncTest;
+pub use godotggrs_synctestsession::GodotGGRSSyncTestSession;
 
 mod godotggrs_p2psession;
 mod godotggrs_p2pspectatorsession;
-mod godotggrs_synctest;
+mod godotggrs_synctestsession;
 
 /// Error message that is printed when there's no GGRS session made.
 pub const ERR_MESSAGE_NO_SESSION_MADE: &str = "No session was made.";
@@ -68,7 +68,7 @@ pub fn init_panic_hook() {
 
 fn init(handle: InitHandle) {
     handle.add_class::<GodotGGRSP2PSession>();
-    handle.add_class::<GodotGGRSSyncTest>();
+    handle.add_class::<GodotGGRSSyncTestSession>();
     handle.add_class::<GodotGGRSP2PSpectatorSession>();
     init_panic_hook()
 }
