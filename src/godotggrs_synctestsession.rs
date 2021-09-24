@@ -1,6 +1,5 @@
 use crate::*;
 use ggrs::{Frame, GGRSRequest, GameState, GameStateCell, PlayerHandle, SyncTestSession};
-use std::convert::TryInto;
 
 /// A Godot implementation of [`SyncTestSession`]
 #[derive(NativeClass)]
@@ -66,14 +65,14 @@ impl GodotGGRSSyncTestSession {
     /// - Will print an [ERR_MESSAGE_NO_SESSION_MADE] error if a session has not been made
     /// - Will print an [ERR_MESSAGE_NO_CALLBACK_NODE] error if a callback node has not been set
     #[export]
-    pub fn advance_frame(&mut self, _owner: &Node, all_inputs: Vec<u32>) {
-        let mut all_inputs_bytes = Vec::new();
-        for i in all_inputs {
-            all_inputs_bytes.push(Vec::from(i.to_be_bytes()));
+    pub fn advance_frame(&mut self, _owner: &Node, all_inputs: Vec<Variant>) {
+        let mut all_inputs_serialized: Vec<Vec<u8>> = Vec::new();
+        for item in all_inputs {
+            all_inputs_serialized.push(bincode::serialize(&item.dispatch()).unwrap_or_default());
         }
 
         match &mut self.sess {
-            Some(s) => match s.advance_frame(&all_inputs_bytes) {
+            Some(s) => match s.advance_frame(&all_inputs_serialized) {
                 Ok(requests) => self.handle_requests(requests),
                 Err(e) => {
                     godot_error!("{}", e)
@@ -111,16 +110,9 @@ impl GodotGGRSSyncTestSession {
                 let node = unsafe { s.assume_safe() };
                 let mut godot_array: Vec<Variant> = Vec::new();
                 for i in inputs {
-                    let result = (
-                        i.frame,
-                        i.size,
-                        u32::from_be_bytes(
-                            i.buffer[..i.size]
-                                .try_into()
-                                .expect("Slice size is too big or too small to convert into u32"),
-                        ),
-                    )
-                        .to_variant();
+                    let buffer: VariantDispatch =
+                        bincode::deserialize(&i.buffer[..i.size]).unwrap();
+                    let result = (i.frame, i.size, Variant::from(&buffer)).to_variant();
                     godot_array.push(result);
                 }
                 unsafe { node.call(CALLBACK_FUNC_ADVANCE_FRAME, &[godot_array.to_variant()]) };
@@ -138,10 +130,15 @@ impl GodotGGRSSyncTestSession {
                 let node = unsafe { s.assume_safe() };
                 let game_state = cell.load();
                 let frame = game_state.frame.to_variant();
-                let buffer =
-                    ByteArray::from_vec(game_state.buffer.unwrap_or_default()).to_variant();
+                let buffer: VariantDispatch =
+                    bincode::deserialize(&game_state.buffer.unwrap_or_default()[..]).unwrap();
                 let checksum = game_state.checksum.to_variant();
-                unsafe { node.call(CALLBACK_FUNC_LOAD_GAME_STATE, &[frame, buffer, checksum]) };
+                unsafe {
+                    node.call(
+                        CALLBACK_FUNC_LOAD_GAME_STATE,
+                        &[frame, Variant::from(&buffer), checksum],
+                    )
+                };
             }
             None => {
                 godot_error!("{}", ERR_MESSAGE_NO_CALLBACK_NODE);
@@ -156,12 +153,11 @@ impl GodotGGRSSyncTestSession {
                 let node = unsafe { s.assume_safe() };
                 let state: Variant =
                     unsafe { node.call(CALLBACK_FUNC_SAVE_GAME_STATE, &[frame.to_variant()]) };
-                let state_bytes = ByteArray::from_variant(&state).unwrap_or_default();
-                let mut state_bytes_vec = Vec::new();
-                for i in 0..state_bytes.len() {
-                    state_bytes_vec.push(state_bytes.get(i));
-                }
-                let result = GameState::new(frame, Some(state_bytes_vec), None);
+                let result = GameState::new(
+                    frame,
+                    Some(bincode::serialize(&state.dispatch()).unwrap()),
+                    None,
+                );
                 cell.save(result);
             }
             None => {
