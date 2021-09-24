@@ -1,6 +1,5 @@
 use crate::*;
 use ggrs::{Frame, GGRSRequest, GameState, GameStateCell, PlayerHandle, SyncTestSession};
-use std::convert::TryInto;
 
 /// A Godot implementation of [`SyncTestSession`]
 #[derive(NativeClass)]

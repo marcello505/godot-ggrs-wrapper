@@ -2,7 +2,6 @@ use crate::*;
 use ggrs::{
     Frame, GGRSEvent, GGRSRequest, GameState, GameStateCell, P2PSpectatorSession, SessionState,
 };
-use std::convert::TryInto;
 use std::option::*;
 
 /// A Godot implementation of [`P2PSpectatorSession`]

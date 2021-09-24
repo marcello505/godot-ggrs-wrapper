@@ -4,7 +4,6 @@ use ggrs::{
     Frame, GGRSEvent, GGRSRequest, GameState, GameStateCell, P2PSession, PlayerHandle, PlayerType,
     SessionState,
 };
-use std::convert::TryInto;
 use std::option::*;
 
 /// A Godot implementation of [`P2PSession`]
