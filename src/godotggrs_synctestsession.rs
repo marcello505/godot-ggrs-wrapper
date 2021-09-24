@@ -65,14 +65,14 @@ impl GodotGGRSSyncTestSession {
     /// - Will print an [ERR_MESSAGE_NO_SESSION_MADE] error if a session has not been made
     /// - Will print an [ERR_MESSAGE_NO_CALLBACK_NODE] error if a callback node has not been set
     #[export]
-    pub fn advance_frame(&mut self, _owner: &Node, all_inputs: Vec<u32>) {
-        let mut all_inputs_bytes = Vec::new();
-        for i in all_inputs {
-            all_inputs_bytes.push(Vec::from(i.to_be_bytes()));
+    pub fn advance_frame(&mut self, _owner: &Node, all_inputs: Vec<Variant>) {
+        let mut all_inputs_serialized: Vec<Vec<u8>> = Vec::new();
+        for item in all_inputs {
+            all_inputs_serialized.push(bincode::serialize(&item.dispatch()).unwrap_or_default());
         }
 
         match &mut self.sess {
-            Some(s) => match s.advance_frame(&all_inputs_bytes) {
+            Some(s) => match s.advance_frame(&all_inputs_serialized) {
                 Ok(requests) => self.handle_requests(requests),
                 Err(e) => {
                     godot_error!("{}", e)
