@@ -130,10 +130,15 @@ impl GodotGGRSP2PSession {
     /// - Will print an [ERR_MESSAGE_NO_SESSION_MADE] error if a session has not been made
     /// - Will print an [ERR_MESSAGE_NO_CALLBACK_NODE] error if a callback node has not been set
     #[export]
-    pub fn advance_frame(&mut self, _owner: &Node, local_player_handle: usize, local_input: u32) {
+    pub fn advance_frame(
+        &mut self,
+        _owner: &Node,
+        local_player_handle: usize,
+        local_input: Variant,
+    ) {
         //Convert local_input into a byte array
-        let local_input_bytes = local_input.to_be_bytes();
-        let local_input_array_slice: &[u8] = &local_input_bytes[..];
+        let local_input_array_slice: &[u8] =
+            &bincode::serialize(&local_input.dispatch()).unwrap_or_default()[..];
 
         match &mut self.sess {
             Some(s) => match s.advance_frame(local_player_handle, local_input_array_slice) {
@@ -407,10 +412,15 @@ impl GodotGGRSP2PSession {
                 let node = unsafe { s.assume_safe() };
                 let game_state = cell.load();
                 let frame = game_state.frame.to_variant();
-                let buffer =
-                    ByteArray::from_vec(game_state.buffer.unwrap_or_default()).to_variant();
+                let buffer: VariantDispatch =
+                    bincode::deserialize(&game_state.buffer.unwrap_or_default()[..]).unwrap();
                 let checksum = game_state.checksum.to_variant();
-                unsafe { node.call(CALLBACK_FUNC_LOAD_GAME_STATE, &[frame, buffer, checksum]) };
+                unsafe {
+                    node.call(
+                        CALLBACK_FUNC_LOAD_GAME_STATE,
+                        &[frame, Variant::from(&buffer), checksum],
+                    )
+                };
             }
             None => {
                 godot_error!("{}", ERR_MESSAGE_NO_CALLBACK_NODE);
@@ -425,12 +435,11 @@ impl GodotGGRSP2PSession {
                 let node = unsafe { s.assume_safe() };
                 let state: Variant =
                     unsafe { node.call(CALLBACK_FUNC_SAVE_GAME_STATE, &[frame.to_variant()]) };
-                let state_bytes = ByteArray::from_variant(&state).unwrap_or_default();
-                let mut state_bytes_vec = Vec::new();
-                for i in 0..state_bytes.len() {
-                    state_bytes_vec.push(state_bytes.get(i));
-                }
-                let result = GameState::new(frame, Some(state_bytes_vec), None);
+                let result = GameState::new(
+                    frame,
+                    Some(bincode::serialize(&state.dispatch()).unwrap()),
+                    None,
+                );
                 cell.save(result);
             }
             None => {
