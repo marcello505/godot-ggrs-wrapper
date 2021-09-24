@@ -385,16 +385,9 @@ impl GodotGGRSP2PSession {
                 let node = unsafe { s.assume_safe() };
                 let mut godot_array: Vec<Variant> = Vec::new();
                 for i in inputs {
-                    let result = (
-                        i.frame,
-                        i.size,
-                        u32::from_be_bytes(
-                            i.buffer[..i.size]
-                                .try_into()
-                                .expect("Slice size is too big or too small to convert into u32"),
-                        ),
-                    )
-                        .to_variant();
+                    let buffer: VariantDispatch =
+                        bincode::deserialize(&i.buffer[..i.size]).unwrap();
+                    let result = (i.frame, i.size, Variant::from(&buffer)).to_variant();
                     godot_array.push(result);
                 }
                 unsafe { node.call(CALLBACK_FUNC_ADVANCE_FRAME, &[godot_array.to_variant()]) };
