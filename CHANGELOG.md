@@ -4,6 +4,9 @@ In this document, all remarkable changes are listed. Not mentioned are smaller c
 
 ## Unreleased
 
+- Updated GGRS to v0.5.1
+- Added `get_frames_ahead()` function to `GodotGGRSP2PSession`.
+
 ## 0.4.0
 
 - Rename struct `GodotGGRSSyncTest` to `GodotGGRSSyncTestSession`.
