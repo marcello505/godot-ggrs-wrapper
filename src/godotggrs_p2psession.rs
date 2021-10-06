@@ -360,6 +360,21 @@ impl GodotGGRSP2PSession {
         return result;
     }
 
+    /// Calls and returns [P2PSession::frames_ahead()].
+    /// Will return a 0 if no session was made.
+    /// # Errors
+    /// - Will print an [ERR_MESSAGE_NO_SESSION_MADE] error if a session has not been made
+    #[export]
+    pub fn get_frames_ahead(&mut self, _owner: &Node) -> i32 {
+        match &mut self.sess {
+            Some(s) => s.frames_ahead(),
+            None => {
+                godot_error!("{}", ERR_MESSAGE_NO_SESSION_MADE);
+                0
+            }
+        }
+    }
+
     //NON-EXPORTED FUNCTIONS
     fn handle_requests(&mut self, requests: Vec<GGRSRequest>) {
         for item in requests {

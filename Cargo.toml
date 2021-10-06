@@ -14,7 +14,7 @@ categories = ["network-programming", "game-development"]
 
 [dependencies]
 gdnative = "0.9.3"
-ggrs = "0.5.0"
+ggrs = "0.5.1"
 
 [lib]
 name = "godot_ggrs_wrapper"
