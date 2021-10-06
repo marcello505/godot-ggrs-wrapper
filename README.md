@@ -10,6 +10,11 @@ The purpose of this repo is to create a wrapper for the [ggrs](https://github.co
 - States are GodotByteArrays, you convert the godot variant to a ByteArray and give it to GodotGGRS.
 - Compiling requires Clang, see details [here](https://rust-lang.github.io/rust-bindgen/requirements.html).
 
+## Links
+
+- [Documentation](https://docs.rs/godot-ggrs-wrapper/0.4.0/godot_ggrs_wrapper/)
+- [Crates.io](https://crates.io/crates/godot-ggrs-wrapper)
+
 ## Examples
 
 - [Remote connection between 2 different machines](https://youtu.be/8gwXVMqhNs8)
