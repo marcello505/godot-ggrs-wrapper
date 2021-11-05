@@ -40,7 +40,7 @@ impl GodotGGRSSyncTestSession {
 
     /// Sets [SyncTestSession::set_frame_delay()] of specified handle.
     /// # Errors
-    /// - Will print an [ERR_MESSAGE_NO_SESSION_MADE] error if a session has not been made
+    /// - Will print a [ERR_MESSAGE_NO_SESSION_MADE] error if a session has not been made
     #[export]
     pub fn set_frame_delay(
         &mut self,
@@ -63,8 +63,8 @@ impl GodotGGRSSyncTestSession {
     /// - [CALLBACK_FUNC_LOAD_GAME_STATE]
     /// - [CALLBACK_FUNC_SAVE_GAME_STATE]
     /// # Errors
-    /// - Will print an [ERR_MESSAGE_NO_SESSION_MADE] error if a session has not been made
-    /// - Will print an [ERR_MESSAGE_NO_CALLBACK_NODE] error if a callback node has not been set
+    /// - Will print a [ERR_MESSAGE_NO_SESSION_MADE] error if a session has not been made
+    /// - Will print a [ERR_MESSAGE_NO_CALLBACK_NODE] error if a callback node has not been set
     #[export]
     pub fn advance_frame(&mut self, _owner: &Node, all_inputs: Vec<u32>) {
         let mut all_inputs_bytes = Vec::new();

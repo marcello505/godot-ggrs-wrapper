@@ -57,7 +57,7 @@ impl GodotGGRSP2PSpectatorSession {
         }
     }
 
-    /// Returns the current sate of the session as a String. Take a look at [SessionState] for all possible states.
+    /// Returns the current sate of the session as a String. See [SessionState] for all possible states.
     #[export]
     pub fn get_current_state(&mut self, _owner: &Node) -> String {
         match &mut self.sess {
@@ -75,7 +75,7 @@ impl GodotGGRSP2PSpectatorSession {
 
     /// Starts the [P2PSpectatorSession]
     /// # Errors
-    /// - Will print an [ERR_MESSAGE_NO_SESSION_MADE] error if a session has not been made
+    /// - Will print a [ERR_MESSAGE_NO_SESSION_MADE] error if a session has not been made
     #[export]
     pub fn start_session(&mut self, _owner: &Node) {
         match &mut self.sess {
@@ -104,8 +104,8 @@ impl GodotGGRSP2PSpectatorSession {
     /// - [CALLBACK_FUNC_LOAD_GAME_STATE]
     /// - [CALLBACK_FUNC_SAVE_GAME_STATE]
     /// # Errors
-    /// - Will print an [ERR_MESSAGE_NO_SESSION_MADE] error if a session has not been made
-    /// - Will print an [ERR_MESSAGE_NO_CALLBACK_NODE] error if a callback node has not been set
+    /// - Will print a [ERR_MESSAGE_NO_SESSION_MADE] error if a session has not been made
+    /// - Will print a [ERR_MESSAGE_NO_CALLBACK_NODE] error if a callback node has not been set
     #[export]
     pub fn advance_frame(&mut self, _owner: &Node) {
         match &mut self.sess {
@@ -125,7 +125,7 @@ impl GodotGGRSP2PSpectatorSession {
 
     /// Returns [P2PSpectatorSession::frames_behind_host()]
     /// # Errors
-    /// - Will print an [ERR_MESSAGE_NO_SESSION_MADE] error if a session has not been made
+    /// - Will print a [ERR_MESSAGE_NO_SESSION_MADE] error if a session has not been made
     #[export]
     pub fn get_frames_behind_host(&mut self, _owner: &Node) -> u32 {
         match &mut self.sess {
@@ -139,7 +139,7 @@ impl GodotGGRSP2PSpectatorSession {
 
     /// Sets [P2PSpectatorSession::set_catchup_speed()]
     /// # Errors
-    /// - Will print an [ERR_MESSAGE_NO_SESSION_MADE] error if a session has not been made
+    /// - Will print a [ERR_MESSAGE_NO_SESSION_MADE] error if a session has not been made
     #[export]
     pub fn set_catchup_speed(&mut self, _owner: &Node, desired_catchup_speed: u32) {
         match &mut self.sess {
@@ -153,7 +153,7 @@ impl GodotGGRSP2PSpectatorSession {
 
     /// Sets [P2PSpectatorSession::set_max_frames_behind()]
     /// # Errors
-    /// - Will print an [ERR_MESSAGE_NO_SESSION_MADE] error if a session has not been made
+    /// - Will print a [ERR_MESSAGE_NO_SESSION_MADE] error if a session has not been made
     #[export]
     pub fn set_max_frames_behind(&mut self, _owner: &Node, desired_value: u32) {
         match &mut self.sess {
@@ -167,7 +167,7 @@ impl GodotGGRSP2PSpectatorSession {
 
     /// Calls [P2PSpectatorSession::poll_remote_clients()]
     /// # Errors
-    /// - Will print an [ERR_MESSAGE_NO_SESSION_MADE] error if a session has not been made
+    /// - Will print a [ERR_MESSAGE_NO_SESSION_MADE] error if a session has not been made
     #[export]
     pub fn poll_remote_clients(&mut self, _owner: &Node) {
         match &mut self.sess {
@@ -178,7 +178,7 @@ impl GodotGGRSP2PSpectatorSession {
 
     /// Sets [P2PSpectatorSession::set_fps()]
     /// # Errors
-    /// - Will print an [ERR_MESSAGE_NO_SESSION_MADE] error if a session has not been made
+    /// - Will print a [ERR_MESSAGE_NO_SESSION_MADE] error if a session has not been made
     #[export]
     pub fn set_fps(&mut self, _owner: &Node, fps: u32) {
         match &mut self.sess {
@@ -192,7 +192,7 @@ impl GodotGGRSP2PSpectatorSession {
 
     /// Prints out network stats of host address
     /// # Errors
-    /// - Will print an [ERR_MESSAGE_NO_SESSION_MADE] error if a session has not been made
+    /// - Will print a [ERR_MESSAGE_NO_SESSION_MADE] error if a session has not been made
     #[export]
     pub fn print_network_stats(&mut self, _owner: &Node) {
         match &mut self.sess {
@@ -206,7 +206,7 @@ impl GodotGGRSP2PSpectatorSession {
 
     /// Will return network stats of host address as a `tuple`, which will be converted to an `Array` inside godot.
     /// # Errors
-    /// - Will print an [ERR_MESSAGE_NO_SESSION_MADE] error if a session has not been made
+    /// - Will print a [ERR_MESSAGE_NO_SESSION_MADE] error if a session has not been made
     #[export]
     pub fn get_network_stats(&mut self, _owner: &Node) -> (usize, u64, usize, i32, i32) {
         const DEFAULT_RESPONSE: (usize, u64, usize, i32, i32) = (0, 0, 0, 0, 0);
@@ -255,7 +255,7 @@ impl GodotGGRSP2PSpectatorSession {
     ///             var count = item[1][2]
     /// ```
     /// # Errors
-    /// - Will print an [ERR_MESSAGE_NO_SESSION_MADE] error if a session has not been made
+    /// - Will print a [ERR_MESSAGE_NO_SESSION_MADE] error if a session has not been made
     #[export]
     pub fn get_events(&mut self, _owner: &Node) -> Vec<(&str, Variant)> {
         let mut result: Vec<(&str, Variant)> = Vec::new();
