@@ -12,7 +12,7 @@ The purpose of this repo is to create a wrapper for the [ggrs](https://github.co
 
 ## Links
 
-- [Documentation](https://docs.rs/godot-ggrs-wrapper/0.4.0/godot_ggrs_wrapper/)
+- [Documentation](https://docs.rs/godot-ggrs-wrapper/)
 - [Crates.io](https://crates.io/crates/godot-ggrs-wrapper)
 
 ## Examples
