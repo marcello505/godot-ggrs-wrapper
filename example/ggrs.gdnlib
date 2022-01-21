@@ -1,0 +1,14 @@
+[general]
+
+singleton=false
+load_once=true
+symbol_prefix="godot_"
+reloadable=false
+
+[entry]
+
+Windows.64="res://godot_ggrs_wrapper_windows-64_v0.4.1.dll"
+
+[dependencies]
+
+Windows.64=[  ]

@@ -18,6 +18,11 @@ The purpose of this repo is to create a wrapper for the [ggrs](https://github.co
 ## Examples
 
 - [Remote connection between 2 different machines](https://youtu.be/8gwXVMqhNs8)
+- [Example Project](https://github.com/marcello505/godot-ggrs-wrapper/tree/main/example)
+
+## Projects that use godot-ggrs-wrapper
+Does your project use godot-ggrs-wrapper? Let me know and i'll be happy to add a link!
+- [Girls With Swords](https://github.com/trian-gles/Girls-with-swords-GGRS)
 
 ## Quick start
 
