@@ -8,6 +8,7 @@ In this document, all remarkable changes are listed. Not mentioned are smaller c
 
 - Updated GGRS to v0.5.1
 - Added `get_frames_ahead()` function to `GodotGGRSP2PSession`.
+- Added an example project made by [@trian-gles](https://github.com/trian-gles).
 
 ## 0.4.0
 
