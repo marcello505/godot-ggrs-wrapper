@@ -28,11 +28,20 @@ impl GodotGGRSSyncTestSession {
     }
 
     /// Creates a [SyncTestSession],
-    /// call this when you want to start setting up a `SyncTestSession` takes the total number of players and the check distance as parameters
+    /// call this when you want to start setting up a `SyncTestSession` takes the total number of players, the check distance and the max prediction frames as parameters
+    /// # Notes
+    /// - Max prediction frames is the maximum number of frames GGRS will roll back. Every gamestate older than this is guaranteed to be correct if the players did not desync.
+    /// - This value used to default to `8 frames`, but this has been made adjustable with `GGRS 0.7.0`
     #[export]
-    pub fn create_session(&mut self, _owner: &Node, num_players: u32, check_distance: u32) {
+    pub fn create_session(
+        &mut self,
+        _owner: &Node,
+        num_players: u32,
+        check_distance: usize,
+        max_pred: usize,
+    ) {
         let input_size: usize = std::mem::size_of::<u32>();
-        match SyncTestSession::new(num_players, input_size, check_distance) {
+        match SyncTestSession::new(num_players, input_size, max_pred, check_distance) {
             Ok(s) => self.sess = Some(s),
             Err(e) => godot_error!("{}", e),
         }
@@ -85,6 +94,21 @@ impl GodotGGRSSyncTestSession {
         }
     }
 
+    /// Calls and returns [P2PSession::max_prediction()].
+    /// Will return a 0 if no session was made.
+    /// # Errors
+    /// - Will print an [ERR_MESSAGE_NO_SESSION_MADE] error if a session has not been made
+    #[export]
+    pub fn get_max_prediction(&mut self, _owner: &Node) -> usize {
+        match &mut self.sess {
+            Some(s) => s.max_prediction(),
+            None => {
+                godot_error!("{}", ERR_MESSAGE_NO_SESSION_MADE);
+                return 0;
+            }
+        }
+    }
+
     /// Sets the callback node that will be called when using [Self::advance_frame()]
     #[export]
     pub fn set_callback_node(&mut self, _owner: &Node, callback: Ref<Node>) {
@@ -96,14 +120,16 @@ impl GodotGGRSSyncTestSession {
         for item in requests {
             match item {
                 GGRSRequest::AdvanceFrame { inputs } => self.ggrs_request_advance_fame(inputs),
-                GGRSRequest::LoadGameState { cell } => self.ggrs_request_load_game_state(cell),
+                GGRSRequest::LoadGameState { cell, frame } => {
+                    self.ggrs_request_load_game_state(cell, frame)
+                }
                 GGRSRequest::SaveGameState { cell, frame } => {
                     self.ggrs_request_save_game_state(cell, frame)
                 }
             }
         }
     }
-    ////GGRSRequest handlers
+
     fn ggrs_request_advance_fame(&self, inputs: Vec<ggrs::GameInput>) {
         //Parse parameter inputs in a way that godot can handle then call the callback method
         match self.callback_node {
@@ -131,15 +157,14 @@ impl GodotGGRSSyncTestSession {
         }
     }
 
-    fn ggrs_request_load_game_state(&self, cell: GameStateCell) {
+    fn ggrs_request_load_game_state(&self, cell: GameStateCell, frame: Frame) {
         //Unpack the cell and have over it's values to godot so it can handle it.
         match self.callback_node {
             Some(s) => {
                 let node = unsafe { s.assume_safe() };
                 let game_state = cell.load();
                 let frame = game_state.frame.to_variant();
-                let buffer =
-                    ByteArray::from_vec(game_state.buffer.unwrap_or_default()).to_variant();
+                let buffer = ByteArray::from_vec(game_state.data.unwrap_or_default()).to_variant();
                 let checksum = game_state.checksum.to_variant();
                 unsafe { node.call(CALLBACK_FUNC_LOAD_GAME_STATE, &[frame, buffer, checksum]) };
             }
@@ -161,7 +186,7 @@ impl GodotGGRSSyncTestSession {
                 for i in 0..state_bytes.len() {
                     state_bytes_vec.push(state_bytes.get(i));
                 }
-                let result = GameState::new(frame, Some(state_bytes_vec), None);
+                let result = GameState::new(frame, Some(state_bytes_vec));
                 cell.save(result);
             }
             None => {
