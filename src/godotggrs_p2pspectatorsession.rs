@@ -30,7 +30,7 @@ impl GodotGGRSP2PSpectatorSession {
     /// Creates a [P2PSpectatorSession], call this when you want to start setting up a `P2PSpectatorSession`.
     /// Takes the local port and total number of players and the host address as parameters.
     #[export]
-    pub fn create_session(
+    pub fn create_new_session(
         &mut self,
         _owner: &Node,
         local_port: u16,
@@ -43,6 +43,19 @@ impl GodotGGRSP2PSpectatorSession {
             Ok(s) => self.sess = Some(s),
             Err(e) => godot_error!("{}", e),
         }
+    }
+
+    /// Deprecated method to create a [P2PSpectatorSession]. Use [Self::create_new_session()] instead.
+    #[deprecated(since = "0.5.0", note = "please use `create_new_session()` instead")]
+    #[export]
+    pub fn create_session(
+        &mut self,
+        _owner: &Node,
+        local_port: u16,
+        num_players: u32,
+        host_addr: String,
+    ) {
+        self.create_new_session(_owner, local_port, num_players, host_addr)
     }
 
     /// Returns true if connection has been established with remote players and is ready to start advancing frames via [Self::advance_frame()]

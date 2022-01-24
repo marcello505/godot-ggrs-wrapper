@@ -32,7 +32,7 @@ impl GodotGGRSSyncTestSession {
     /// - Max prediction frames is the maximum number of frames GGRS will roll back. Every gamestate older than this is guaranteed to be correct if the players did not desync.
     /// - This value used to default to `8 frames`, but this has been made adjustable with `GGRS 0.7.0`
     #[export]
-    pub fn create_session(
+    pub fn create_new_session(
         &mut self,
         _owner: &Node,
         num_players: u32,
@@ -44,6 +44,13 @@ impl GodotGGRSSyncTestSession {
             Ok(s) => self.sess = Some(s),
             Err(e) => godot_error!("{}", e),
         }
+    }
+
+    /// Deprecated method to create a [SyncTestSession]. Use [Self::create_new_session()] instead.
+    #[deprecated(since = "0.5.0", note = "please use `create_new_session()` instead")]
+    #[export]
+    pub fn create_session(&mut self, _owner: &Node, num_players: u32, check_distance: usize) {
+        self.create_new_session(_owner, num_players, check_distance, 8)
     }
 
     /// Sets [SyncTestSession::set_frame_delay()] of specified handle.
@@ -100,7 +107,7 @@ impl GodotGGRSSyncTestSession {
         }
     }
 
-    /// Calls and returns [P2PSession::max_prediction()].
+    /// Calls and returns [SyncTestSession::max_prediction()].
     /// Will return a 0 if no session was made.
     /// # Errors
     /// - Will print an [ERR_MESSAGE_NO_SESSION_MADE] error if a session has not been made

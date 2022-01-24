@@ -36,7 +36,7 @@ impl GodotGGRSP2PSession {
     /// - Max prediction frames is the maximum number of frames GGRS will roll back. Every gamestate older than this is guaranteed to be correct if the players did not desync.
     /// - This value used to default to `8 frames`, but this has been made adjustable with `GGRS 0.7.0`
     #[export]
-    pub fn create_session(
+    pub fn create_new_session(
         &mut self,
         _owner: &Node,
         local_port: u16,
@@ -48,6 +48,13 @@ impl GodotGGRSP2PSession {
             Ok(s) => self.sess = Some(s),
             Err(e) => godot_error!("{}", e),
         }
+    }
+
+    /// Deprecated method to create a [P2PSession]. Use [Self::create_new_session()] instead.
+    #[deprecated(since = "0.5.0", note = "please use `create_new_session()` instead")]
+    #[export]
+    pub fn create_session(&mut self, _owner: &Node, local_port: u16, num_players: u32) {
+        self.create_new_session(_owner, local_port, num_players, 8)
     }
 
     /// Adds a local player to the session and return the handle.

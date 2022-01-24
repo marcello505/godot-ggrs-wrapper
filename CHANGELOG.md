@@ -4,6 +4,8 @@ In this document, all remarkable changes are listed. Not mentioned are smaller c
 
 ## Unreleased
 
+- Deprecated `create_session()` method in `GodotGGRSP2PSession`, `GodotGGRSP2PSpectatorSession` and `GodotGGRSSyncTestSession`. Use `create_new_session()` from now on.
+
 ## 0.4.1
 
 - Updated GGRS to v0.5.1
