@@ -10,6 +10,7 @@ pub use godotggrs_p2psession::GodotGGRSP2PSession;
 pub use godotggrs_p2pspectatorsession::GodotGGRSP2PSpectatorSession;
 pub use godotggrs_synctestsession::GodotGGRSSyncTestSession;
 
+mod ggrs_request_handlers;
 mod godotggrs_p2psession;
 mod godotggrs_p2pspectatorsession;
 mod godotggrs_synctestsession;
