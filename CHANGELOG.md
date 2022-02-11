@@ -4,7 +4,10 @@ In this document, all remarkable changes are listed. Not mentioned are smaller c
 
 ## Unreleased
 
+## 0.5.0
+
 - Updated GGRS to v0.8.0
+- Updated Rust edition to 2021
 - Deprecated `create_session()` method in `GodotGGRSP2PSession`, `GodotGGRSP2PSpectatorSession` and `GodotGGRSSyncTestSession`. Use `create_new_session()` from now on.
 
 ## 0.4.1
