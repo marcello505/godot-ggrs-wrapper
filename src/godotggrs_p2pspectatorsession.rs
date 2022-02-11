@@ -1,8 +1,5 @@
 use crate::*;
-use ggrs::{
-    Frame, GGRSEvent, GGRSRequest, GameState, GameStateCell, P2PSpectatorSession, SessionState,
-};
-use std::convert::TryInto;
+use ggrs::{GGRSEvent, P2PSpectatorSession, SessionState};
 use std::option::*;
 
 /// A Godot implementation of [`P2PSpectatorSession`]
@@ -33,7 +30,7 @@ impl GodotGGRSP2PSpectatorSession {
     /// Creates a [P2PSpectatorSession], call this when you want to start setting up a `P2PSpectatorSession`.
     /// Takes the local port and total number of players and the host address as parameters.
     #[export]
-    pub fn create_session(
+    pub fn create_new_session(
         &mut self,
         _owner: &Node,
         local_port: u16,
@@ -46,6 +43,19 @@ impl GodotGGRSP2PSpectatorSession {
             Ok(s) => self.sess = Some(s),
             Err(e) => godot_error!("{}", e),
         }
+    }
+
+    /// Deprecated method to create a [P2PSpectatorSession]. Use [Self::create_new_session()] instead.
+    #[deprecated(since = "0.5.0", note = "please use `create_new_session()` instead")]
+    #[export]
+    pub fn create_session(
+        &mut self,
+        _owner: &Node,
+        local_port: u16,
+        num_players: u32,
+        host_addr: String,
+    ) {
+        self.create_new_session(_owner, local_port, num_players, host_addr)
     }
 
     /// Returns true if connection has been established with remote players and is ready to start advancing frames via [Self::advance_frame()]
@@ -108,17 +118,22 @@ impl GodotGGRSP2PSpectatorSession {
     /// - Will print a [ERR_MESSAGE_NO_CALLBACK_NODE] error if a callback node has not been set
     #[export]
     pub fn advance_frame(&mut self, _owner: &Node) {
-        match &mut self.sess {
-            Some(s) => match s.advance_frame() {
-                Ok(requests) => {
-                    self.handle_requests(requests);
-                }
-                Err(e) => {
-                    godot_error!("{}", e);
+        match self.callback_node {
+            Some(callback_node) => match &mut self.sess {
+                Some(s) => match s.advance_frame() {
+                    Ok(requests) => {
+                        ggrs_request_handlers::handle_requests(&callback_node, requests);
+                    }
+                    Err(e) => {
+                        godot_error!("{}", e);
+                    }
+                },
+                None => {
+                    godot_error!("{}", ERR_MESSAGE_NO_SESSION_MADE);
                 }
             },
             None => {
-                godot_error!("{}", ERR_MESSAGE_NO_SESSION_MADE);
+                godot_error!("{}", ERR_MESSAGE_NO_CALLBACK_NODE);
             }
         }
     }
@@ -294,85 +309,5 @@ impl GodotGGRSP2PSpectatorSession {
             None => godot_error!("{}", ERR_MESSAGE_NO_SESSION_MADE),
         };
         return result;
-    }
-
-    //NON-EXPORTED FUNCTIONS
-    fn handle_requests(&mut self, requests: Vec<GGRSRequest>) {
-        for item in requests {
-            match item {
-                GGRSRequest::AdvanceFrame { inputs } => self.ggrs_request_advance_fame(inputs),
-                GGRSRequest::LoadGameState { cell } => self.ggrs_request_load_game_state(cell),
-                GGRSRequest::SaveGameState { cell, frame } => {
-                    self.ggrs_request_save_game_state(cell, frame);
-                }
-            }
-        }
-    }
-
-    ////GGRSRequest handlers
-    fn ggrs_request_advance_fame(&self, inputs: Vec<ggrs::GameInput>) {
-        //Parse parameter inputs in a way that godot can handle then call the callback method
-        match self.callback_node {
-            Some(s) => {
-                let node = unsafe { s.assume_safe() };
-                let mut godot_array: Vec<Variant> = Vec::new();
-                for i in inputs {
-                    let result = (
-                        i.frame,
-                        i.size,
-                        u32::from_be_bytes(
-                            i.buffer[..i.size]
-                                .try_into()
-                                .expect("Slice size is too big or too small to convert into u32"),
-                        ),
-                    )
-                        .to_variant();
-                    godot_array.push(result);
-                }
-                unsafe { node.call(CALLBACK_FUNC_ADVANCE_FRAME, &[godot_array.to_variant()]) };
-            }
-            None => {
-                godot_error!("{}", ERR_MESSAGE_NO_CALLBACK_NODE);
-            }
-        }
-    }
-
-    fn ggrs_request_load_game_state(&self, cell: GameStateCell) {
-        //Unpack the cell and have over it's values to godot so it can handle it.
-        match self.callback_node {
-            Some(s) => {
-                let node = unsafe { s.assume_safe() };
-                let game_state = cell.load();
-                let frame = game_state.frame.to_variant();
-                let buffer =
-                    ByteArray::from_vec(game_state.buffer.unwrap_or_default()).to_variant();
-                let checksum = game_state.checksum.to_variant();
-                unsafe { node.call(CALLBACK_FUNC_LOAD_GAME_STATE, &[frame, buffer, checksum]) };
-            }
-            None => {
-                godot_error!("{}", ERR_MESSAGE_NO_CALLBACK_NODE);
-            }
-        }
-    }
-
-    fn ggrs_request_save_game_state(&mut self, cell: GameStateCell, frame: Frame) {
-        //Store current cell for later use
-        match self.callback_node {
-            Some(s) => {
-                let node = unsafe { s.assume_safe() };
-                let state: Variant =
-                    unsafe { node.call(CALLBACK_FUNC_SAVE_GAME_STATE, &[frame.to_variant()]) };
-                let state_bytes = ByteArray::from_variant(&state).unwrap_or_default();
-                let mut state_bytes_vec = Vec::new();
-                for i in 0..state_bytes.len() {
-                    state_bytes_vec.push(state_bytes.get(i));
-                }
-                let result = GameState::new(frame, Some(state_bytes_vec), None);
-                cell.save(result);
-            }
-            None => {
-                godot_error!("{}", ERR_MESSAGE_NO_CALLBACK_NODE);
-            }
-        }
     }
 }

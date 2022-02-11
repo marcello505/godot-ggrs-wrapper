@@ -13,11 +13,11 @@ var game_started: bool = false
 
 func start_game(hosting: bool):
 	if(hosting):
-		$GodotGGRS.create_session(7070, 2) # Port 7070, 2 max players
+		$GodotGGRS.create_new_session(7070, 2, 8) # Port 7070, 2 max players, max 8 prediction frames
 		local_handle = $GodotGGRS.add_local_player()
 		remote_handle = $GodotGGRS.add_remote_player("127.0.0.1:7071")
 	else:
-		$GodotGGRS.create_session(7071, 2) # Port 7071, 2 max players
+		$GodotGGRS.create_new_session(7071, 2, 8) # Port 7071, 2 max players, max 8 prediction frames
 		remote_handle = $GodotGGRS.add_remote_player("127.0.0.1:7070")
 		local_handle = $GodotGGRS.add_local_player()
 
