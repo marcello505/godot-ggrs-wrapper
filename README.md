@@ -21,7 +21,9 @@ The purpose of this repo is to create a wrapper for the [ggrs](https://github.co
 - [Example Project](https://github.com/marcello505/godot-ggrs-wrapper/tree/main/example)
 
 ## Projects that use godot-ggrs-wrapper
+
 Does your project use godot-ggrs-wrapper? Let me know and i'll be happy to add a link!
+
 - [Girls With Swords](https://github.com/trian-gles/Girls-with-swords-GGRS)
 
 ## Quick start
@@ -37,11 +39,11 @@ func _ready():
 	var local_handle: int #This var is later used to identify your local inputs
 	var remote_handle: int #This var is later used to identify the remote_players inputs
 	if(OS.get_cmdline_args()[0] == "listen"):
-		$GodotGGRS.create_session(7070, 2) # Port 7070, 2 max players
+		$GodotGGRS.create_new_session(7070, 2) # Port 7070, 2 max players, max 8 prediction frames
 		local_handle = $GodotGGRS.add_local_player()
 		remote_handle = $GodotGGRS.add_remote_player("127.0.0.1:7071")
 	elif(OS.get_cmdline_args()[0] == "join"):
-		$GodotGGRS.create_session(7071, 2) # Port 7071, 2 max players
+		$GodotGGRS.create_new_session(7071, 2) # Port 7071, 2 max players, max 8 prediction frames
 		remote_handle = $GodotGGRS.add_remote_player("127.0.0.1:7070")
 		local_handle = $GodotGGRS.add_local_player()
 
