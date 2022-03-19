@@ -13,7 +13,7 @@ categories = ["network-programming", "game-development"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-gdnative = "0.9.3"
+gdnative = "0.10.0"
 ggrs = "0.9.1"
 
 [lib]
